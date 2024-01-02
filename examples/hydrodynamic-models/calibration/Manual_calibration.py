@@ -232,7 +232,7 @@ endError = end
 # endgauge = gauges.loc[gaugei, 'Qend']
 
 Sub.calculate_q_metrics(
-    Calib, stationname, gaugexs, Filter=Filter, start=startError, end=endError
+    Calib, stationname, gaugexs, filter=Filter, start=startError, end=endError
 )
 
 # plt.savefig(saveto + "/Segment-" + str(Reach.id) + "-" +

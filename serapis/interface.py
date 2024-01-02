@@ -83,7 +83,7 @@ class Interface(River):
 
         Returns
         -------
-        IF: [dataframe attribute]
+        interface: [dataframe attribute]
             dataframe with two columns ["filename", "sxid"]
         """
         try:

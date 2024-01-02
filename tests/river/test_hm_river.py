@@ -587,7 +587,7 @@ def test_CalculateQMetrics(
     sub.calculate_q_metrics(Calib, station_name, sub.last_xs)
 
     sub.calculate_q_metrics(
-        Calib, station_name, sub.last_xs, Filter=True, start=dates[0], end=dates[1]
+        Calib, station_name, sub.last_xs, filter=True, start=dates[0], end=dates[1]
     )
 
 
@@ -707,7 +707,7 @@ def test_CalculateWLMetrics(
     sub.calculate_wl_metrics(Calib, station_name, sub.last_xs)
 
     sub.calculate_wl_metrics(
-        Calib, station_name, sub.last_xs, Filter=True, start=dates[0], end=dates[1]
+        Calib, station_name, sub.last_xs, filter=True, start=dates[0], end=dates[1]
     )
 
 

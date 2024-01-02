@@ -4453,19 +4453,21 @@ class Reach(River):
             )
 
     def get_xs_geometry(self):
-        """GetXSGeometry. calculate the area and  perimeter for the cross-section highest and lowest point.
+        """get_xs_geometry.
+
+            get_xs_geometry calculates the area and perimeter for the cross-section highest and lowest point.
 
         Returns
         -------
         None.
         """
-        AreaPerLow = np.zeros(shape=(self.xs_number, 2))
-        AreaPerHigh = np.zeros(shape=(self.xs_number, 2))
+        area_per_low = np.zeros(shape=(self.xs_number, 2))
+        area_per_high = np.zeros(shape=(self.xs_number, 2))
         for i in range(self.xs_number):
             geom = self.cross_sections.loc[i, :]
-            H = min(geom["hl"], geom["hr"]) + geom["dbf"]
-            Coords = self.get_vortices(
-                H,
+            h = min(geom["hl"], geom["hr"]) + geom["dbf"]
+            coords = self.get_vortices(
+                h,
                 geom["hl"],
                 geom["hr"],
                 geom["bl"],
@@ -4473,10 +4475,10 @@ class Reach(River):
                 geom["b"],
                 geom["dbf"],
             )
-            AreaPerLow[i, :] = self.polygon_geometry(Coords)
-            H = max(geom["hl"], geom["hr"]) + geom["dbf"]
-            Coords = self.get_vortices(
-                H,
+            area_per_low[i, :] = self.polygon_geometry(coords)
+            h = max(geom["hl"], geom["hr"]) + geom["dbf"]
+            coords = self.get_vortices(
+                h,
                 geom["hl"],
                 geom["hr"],
                 geom["bl"],
@@ -4484,13 +4486,13 @@ class Reach(River):
                 geom["b"],
                 geom["dbf"],
             )
-            AreaPerHigh[i, :] = self.polygon_geometry(Coords)
-        self.AreaPerHigh = AreaPerHigh[:, :]
-        self.AreaPerLow = AreaPerLow[:, :]
+            area_per_high[i, :] = self.polygon_geometry(coords)
+        self.AreaPerHigh = area_per_high[:, :]
+        self.AreaPerLow = area_per_low[:, :]
 
     def get_flow(
         self,
-        IF,
+        interface,
         from_day: Union[int, str] = "",
         to_day: Union[int, str] = "",
         date_format="%d_%m_%Y",
@@ -4502,64 +4504,64 @@ class Reach(River):
 
         Parameters
         ----------
-        IF : [Interface object]
+        interface: [Interface object]
             You Have to create the interface object then read the laterals and the
             boundary conditions first.
-        from_day : [string], optional
+        from_day: [string], optional
             the starting day. The default is ''.
-        to_day : [string], optional
+        to_day: [string], optional
             the ending day. The default is ''.
-        date_format : [string], optional
+        date_format: [string], optional
             the format of the given dates. The default is "%d_%m_%Y".
 
         Returns
         -------
-        BC : [dataframe attribute].
+        BC: [dataframe attribute].
             dataframe containing the boundary condition under a column by the name
             of the segment id.
-        Laterals : [dataframe attribute].
+        Laterals: [dataframe attribute].
             dataframe containing a column for each cross-section that has a lateral.
         """
-        if hasattr(IF, "BC"):
-            if not isinstance(IF.BC, DataFrame):
+        if hasattr(interface, "BC"):
+            if not isinstance(interface.BC, DataFrame):
                 raise ValueError(
                     "The boundary condition does not exist you have to read it first using the "
                     "'ReadBoundaryConditions' method in the interface model"
                 )
-        if hasattr(IF, "Laterals"):
-            if not isinstance(IF.Laterals, DataFrame):
+        if hasattr(interface, "Laterals"):
+            if not isinstance(interface.Laterals, DataFrame):
                 raise ValueError(
-                    "The Laterals does not exist you have to read it first "
-                    "using the 'ReadLaterals' method in the interface model"
+                    "The Laterals do not exist you have to read it first using the 'ReadLaterals' method in the"
+                    " interface model"
                 )
 
         if from_day == "":
-            from_day = IF.BC.index[0]
+            from_day = interface.BC.index[0]
         else:
             from_day = dt.datetime.strptime(from_day, date_format)
 
         if to_day == "":
-            to_day = IF.BC.index[-1]
+            to_day = interface.BC.index[-1]
         else:
             to_day = dt.datetime.strptime(to_day, date_format)
 
         # get the id of the boundary condition
         xs_as_set = set(self.xs_names)
-        bclist = [int(i) for i in IF.bc_table["xsid"].tolist()]
-        bcids = list(xs_as_set.intersection(bclist))
+        bc_list = [int(i) for i in interface.bc_table["xsid"].tolist()]
+        bc_ids = list(xs_as_set.intersection(bc_list))
 
-        if len(bcids) == 0:
+        if len(bc_ids) == 0:
             self.BC = False
-        elif len(bcids) > 1:
-            raise ValueError("There are more than one BC for this Reach-basin")
+        elif len(bc_ids) > 1:
+            raise ValueError("There is more than one BC for this Reach-basin")
         else:
-            self.BC = IF.BC.loc[from_day:to_day, bcids[0]].to_frame()
+            self.BC = interface.BC.loc[from_day:to_day, bc_ids[0]].to_frame()
 
-        if len(IF.laterals_table) > 0:
+        if len(interface.laterals_table) > 0:
             self.laterals_table = [
                 value
                 for value in self.xs_names
-                if value in IF.laterals_table["xsid"].tolist()
+                if value in interface.laterals_table["xsid"].tolist()
             ]
             self.Laterals = pd.DataFrame(
                 index=pd.date_range(from_day, to_day, freq="D"),
@@ -4567,17 +4569,17 @@ class Reach(River):
             )
 
             for i in self.laterals_table:
-                self.Laterals.loc[:, i] = IF.Laterals.loc[from_day:to_day, i]
+                self.Laterals.loc[:, i] = interface.Laterals.loc[from_day:to_day, i]
 
             self.Laterals["total"] = self.Laterals.sum(axis=1)
             # if the rrm hydrograph at the location of the hm or at the location of the rrm is read
-            if isinstance(IF.routed_rrm, DataFrame):
+            if isinstance(interface.routed_rrm, DataFrame):
                 self.rrm_progression = pd.DataFrame(
                     index=pd.date_range(from_day, to_day, freq="D"),
                     columns=self.laterals_table,
                 )
                 for i in self.laterals_table:
-                    self.rrm_progression.loc[:, i] = IF.routed_rrm.loc[
+                    self.rrm_progression.loc[:, i] = interface.routed_rrm.loc[
                         from_day:to_day, i
                     ]
         else:
@@ -4585,9 +4587,10 @@ class Reach(River):
             self.Laterals = pd.DataFrame()
 
     def get_laterals(self, xsid: int):
-        """GetLaterals.
+        """get_laterals.
 
-            GetLaterals method gets the sum of the laterals of all the cross-sections in the reach upstream of a given xsid.
+            get_laterals method gets the sum of the laterals of all the cross-sections in the reach upstream of a given
+            xsid.
 
         Parameters
         ----------
@@ -4596,7 +4599,7 @@ class Reach(River):
 
         Returns
         -------
-        dataframe
+        dataframe:
             sum of the laterals of all the cross-sections in the reach
             upstream of a given xsid.
         """
@@ -4605,22 +4608,23 @@ class Reach(River):
         ):
             raise ValueError("please read the Laterals Table and the Laterals first")
 
-        USgauge = self.laterals_table[: bisect(self.laterals_table, xsid)]
-        return self.Laterals[USgauge].sum(axis=1).to_frame()
+        us_gauge = self.laterals_table[: bisect(self.laterals_table, xsid)]
+        return self.Laterals[us_gauge].sum(axis=1).to_frame()
 
-    def get_total_flow(self, gaugexs: int):
+    def get_total_flow(self, gauge_xs: int):
         """getTotalFlow.
 
-            GetTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC hydrograph.
+            getTotalFlow extracts all the laterals upstream of a certain xs and also extracts the Upstream/BC
+            hydrograph.
 
         Parameters
         ----------
-        gaugexs : [integer]
+        gauge_xs : [integer]
             id of the cross-section.
 
         Returns
         -------
-        total_flow : [dataframe attribute]
+        total_flow: [dataframe attribute]
             dataframe containing the total upstream hydrograph for the location
             of the given xs, the column name is "total"
         """
@@ -4628,16 +4632,16 @@ class Reach(River):
         if not isinstance(self.Laterals, DataFrame):
             raise ValueError("Please read the lateral flows first using the 'GetFlow'")
 
-        if gaugexs not in self.xs_names:
+        if gauge_xs not in self.xs_names:
             raise ValueError(
-                f"The given XS {gaugexs} does not locate in the current river reach"
+                f"The given XS {gauge_xs} does not locate in the current river reach"
                 f"First XS is {self.first_xs} and "
                 f"Last XS is {self.last_xs}"
             )
-        Laterals = self.get_laterals(gaugexs)
+        laterals = self.get_laterals(gauge_xs)
         try:
-            s1 = Laterals.index[0]
-            e1 = Laterals.index[-1]
+            s1 = laterals.index[0]
+            e1 = laterals.index[-1]
         except IndexError:
             logger.info("there are no laterals for the given reach")
             return
@@ -4650,10 +4654,10 @@ class Reach(River):
 
             self.TotalFlow = pd.DataFrame(index=pd.date_range(s, e, freq="D"))
             self.TotalFlow.loc[s:e, "total"] = (
-                Laterals.loc[s:e, 0].values
+                laterals.loc[s:e, 0].values
                 + self.BC.loc[s:e, self.BC.columns[0]].values
             )
-            logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
+            logger.info(f"Total flow for the XS-{gauge_xs} has been calculated")
         elif (
             isinstance(self.us_hydrographs, DataFrame) and len(self.us_hydrographs) > 0
         ):
@@ -4664,17 +4668,17 @@ class Reach(River):
 
             self.TotalFlow = pd.DataFrame(index=pd.date_range(s, e, freq="D"))
             self.TotalFlow.loc[s:e, "total"] = (
-                Laterals.loc[s:e, 0].values
+                laterals.loc[s:e, 0].values
                 + self.us_hydrographs.loc[s:e, "total"].values
             )
-            logger.info(f"Total flow for the XS-{gaugexs} has been calculated")
+            logger.info(f"Total flow for the XS-{gauge_xs} has been calculated")
         else:
             logger.info(
                 f"The US Hydrograph/BC of the given River reach-{self.id} is not read yet "
                 "please use the 'ReadUSHydrograph' method to read it"
             )
 
-    def h_to_q(self, Q):
+    def h_to_q(self, q):
         """h_to_q.
 
             h_to_q method converts the discharge for a certain cross-section into water depth using the manning
@@ -4682,30 +4686,30 @@ class Reach(River):
 
         Parameters
         ----------
-        Q : TYPE
+        q : TYPE
             DESCRIPTION.
 
         Returns
         -------
-        H : TYPE
+        h : TYPE
             DESCRIPTION.
         """
-        H = np.zeros(shape=(len(Q)))
+        h = np.zeros(shape=(len(q)))
 
-        for i in range(len(Q)):
+        for i in range(len(q)):
             # if Qbnd >  calculated Q for the highest depth in the table
             # highest depth = (dike height + 15 m)
-            if Q[i] > self.HQ[-1, 1]:
+            if q[i] > self.HQ[-1, 1]:
                 # depth = highest depth
-                H[i] = self.HQ[-1, 0]
+                h[i] = self.HQ[-1, 0]
                 # if not calculate the Q for each discretized depth in the table
                 # and take the one with the smallest difference from the q given
             else:
-                qq = Q[i]
+                qq = q[i]
                 diff = abs(qq - self.HQ[:, 1])
-                H[i] = self.HQ[np.argmin(diff), 0]
+                h[i] = self.HQ[np.argmin(diff), 0]
 
-        return H
+        return h
 
     plot_discharge_args = dict(
         Calib={"type": Any},
@@ -4760,43 +4764,43 @@ class Reach(River):
     @class_method_parse(plot_discharge_args)
     def plot_q(
         self,
-        Calib,
-        gaugexs: int,
+        calib,
+        gauge_xs: int,
         start: str,
         end: str,
-        stationname: int,
-        gaugename: Union[str, int],
+        station_name: int,
+        gauge_name: Union[str, int],
         segment_xs: str,
         *args,
         **kwargs,
     ):
-        """PlotQ.
+        """plot_q.
 
-            plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe),
+            plot the hydrograph at the gauge location for the hm, rrm (at two locations is availabe),
             sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
-        Calib : [Calibration object]
+        calib: [Calibration object]
             DESCRIPTION.
-        gaugexs : integer
+        gauge_xs: integer
             the xsid of the gauge.
-        start : [string]
+        start: [string]
             start date of the plot.
-        end : [string]
+        end: [string]
             end date of the plot.
-        stationname : [string]
+        station_name: [string]
             station name.
-        gaugename : TYPE
+        gauge_name: TYPE
             DESCRIPTION.
-        segment_xs : TYPE
+        segment_xs: TYPE
             DESCRIPTION.
         kwargs:
             plotlaterals : TYPE, optional
                 DESCRIPTION. The default is True.
             plotus : TYPE, optional
                 DESCRIPTION. The default is True.
-            specificxs : TYPE, optional
+            specific_xs : TYPE, optional
                 DESCRIPTION. The default is False.
             plotrrm : TYPE, optional
                 DESCRIPTION. The default is True.
@@ -4861,9 +4865,9 @@ class Reach(River):
 
         Returns
         -------
-        fig : TYPE
+        fig: TYPE
             DESCRIPTION.
-        ax : TYPE
+        ax: TYPE
             DESCRIPTION.
         """
         start = dt.datetime.strptime(start, self.fmt)
@@ -4872,10 +4876,10 @@ class Reach(River):
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         if self.xs_hydrograph is not None:
-            # plot if you read the results using ther read1DResults
+            # plot if you read the results using ther read_1d_results.
             try:
                 ax.plot(
-                    self.xs_hydrograph.loc[start:end, gaugexs],
+                    self.xs_hydrograph.loc[start:end, gauge_xs],
                     label="RIM",
                     zorder=self.hmorder,
                     linewidth=self.linewidth,
@@ -4884,13 +4888,13 @@ class Reach(River):
                 )
             except KeyError:
                 logger.debug(
-                    f"the xs given -{gaugexs} - does not exist in the river reach"
+                    f"the xs given -{gauge_xs} - does not exist in the river reach"
                 )
 
             # laterals
             if self.plotlaterals:
                 try:
-                    Laterals = self.get_laterals(gaugexs)
+                    laterals = self.get_laterals(gauge_xs)
                 except AssertionError:
                     logger.debug("please read the laterals first to be able to plot it")
 
@@ -4905,14 +4909,14 @@ class Reach(River):
                         linestyle=V.getLineStyle(self.ushstyle),
                         color=self.ushcolor,
                     )
-                # Laterals
+                # laterals
                 if (
                     isinstance(self.laterals_table, list)
                     and len(self.laterals_table) > 0
                 ):
                     ax.plot(
-                        Laterals.loc[start:end, 0],
-                        label="Laterals",
+                        laterals.loc[start:end, 0],
+                        label="laterals",
                         zorder=self.latorder,
                         linewidth=self.linewidth,
                         linestyle=V.getLineStyle(self.latstyle),
@@ -4923,7 +4927,7 @@ class Reach(River):
                     try:
                         ax.plot(
                             self.TotalFlow.loc[start:end, "total"],
-                            label="US/BC + Laterals",
+                            label="US/BC + laterals",
                             zorder=self.totalorder,
                             linewidth=self.linewidth,
                             linestyle=V.getLineStyle(self.totalstyle),
@@ -4947,8 +4951,8 @@ class Reach(River):
                     )
                 except KeyError:
                     msg = (
-                        "Please read the routed hydrograph of the upstream reachs using the "
-                        "'ReadUSHydrograph' method"
+                        "Please read the routed hydrograph of the upstream reaches using the "
+                        "'read_us_hydrograph' method"
                     )
 
                     logger.debug(msg)
@@ -4957,7 +4961,7 @@ class Reach(River):
             if self.plotgauge:
                 # plot the gauge data
                 ax.plot(
-                    Calib.q_gauges.loc[start:end, stationname],
+                    calib.q_gauges.loc[start:end, station_name],
                     label="Gauge",
                     linewidth=self.linewidth,
                     zorder=self.gaugeorder,
@@ -4983,7 +4987,7 @@ class Reach(River):
                 if isinstance(self.RRM, DataFrame):
                     try:
                         ax.plot(
-                            self.RRM.loc[start:end, stationname],
+                            self.RRM.loc[start:end, station_name],
                             label="mHM-RIM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
@@ -4992,13 +4996,13 @@ class Reach(River):
                         )
                     except KeyError:
                         logger.debug(
-                            f" Station {gaugename} does not have the first RRM discharge time series"
+                            f" Station {gauge_name} does not have the first RRM discharge time series"
                         )
 
                 if isinstance(self.RRM2, DataFrame):
                     try:
                         ax.plot(
-                            self.RRM2.loc[start:end, stationname],
+                            self.RRM2.loc[start:end, station_name],
                             label="mHM-mHM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
@@ -5007,13 +5011,13 @@ class Reach(River):
                         )
                     except KeyError:
                         logger.debug(
-                            f" Station {gaugename} does not have a second RRM discharge time series"
+                            f" Station {gauge_name} does not have a second RRM discharge time series"
                         )
 
-        elif isinstance(Calib.calibration_q, DataFrame):
-            # plot if you read the data using ReadCalirationResult
+        elif isinstance(calib.calibration_q, DataFrame):
+            # plot if you read the data using read_caliration_result.
             ax.plot(
-                Calib.calibration_q[segment_xs],
+                calib.calibration_q[segment_xs],
                 label="RIM",
                 zorder=3,
                 linewidth=self.linewidth,
@@ -5022,9 +5026,9 @@ class Reach(River):
             )
             # plot the gauge data
             ax.plot(
-                Calib.q_gauges.loc[
-                    Calib.calibration_q.index[0] : Calib.calibration_q.index[-1],
-                    stationname,
+                calib.q_gauges.loc[
+                    calib.calibration_q.index[0] : calib.calibration_q.index[-1],
+                    station_name,
                 ],
                 label="Gauge-" + str(self.id),
                 linewidth=self.linewidth,
@@ -5033,8 +5037,8 @@ class Reach(River):
             if self.plotrrm:
                 ax.plot(
                     self.RRM.loc[
-                        Calib.calibration_q.index[0] : Calib.calibration_q.index[-1],
-                        stationname,
+                        calib.calibration_q.index[0] : calib.calibration_q.index[-1],
+                        station_name,
                     ],
                     label="RRM",
                 )
@@ -5061,7 +5065,7 @@ class Reach(River):
 
                 ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
-        ax.set_title("Discharge - " + gaugename, fontsize=20)
+        ax.set_title("Discharge - " + gauge_name, fontsize=20)
 
         ax.legend(fontsize=12)
         ax.set_xlabel("Time", fontsize=12)
@@ -5071,15 +5075,15 @@ class Reach(River):
         return fig, ax
 
     @class_method_parse(plot_discharge_args)
-    def plot_rrm_progression(self, specificxs, start, end, *args, **kwargs):
-        """PlotRRMProgression.
+    def plot_rrm_progression(self, specific_xs, start, end, *args, **kwargs):
+        """plot_rrm_progression.
 
-            plot the hydrograph at the  gauge location for the hm, rrm  (at two location is availabe),
+            plot the hydrograph at the gauge location for the hm, rrm (at two locations is available),
             sum of all laterals, upstream hydrograph, boundary condition hydrograph and the gauge time series.
 
         Parameters
         ----------
-        specificxs : integer
+        specific_xs : integer
             the xsid of the gauge.
         start : [string]
             start date of the plot.
@@ -5149,7 +5153,7 @@ class Reach(River):
 
         # laterals
         if self.plotlaterals:
-            Laterals = self.get_laterals(specificxs)
+            laterals = self.get_laterals(specific_xs)
 
             # BC
             if not isinstance(self.BC, bool):
@@ -5161,11 +5165,11 @@ class Reach(River):
                     linestyle=V.getLineStyle(self.ushstyle),
                     color=self.ushcolor,
                 )
-            # Laterals
+            # laterals
             if len(self.laterals_table) > 0:
                 ax.plot(
-                    Laterals.loc[start:end, 0],
-                    label="Laterals Sum \n up to - XS-" + str(specificxs),
+                    laterals.loc[start:end, 0],
+                    label="laterals Sum \n up to - XS-" + str(specific_xs),
                     zorder=self.latorder,
                     linewidth=self.linewidth,
                     linestyle=V.getLineStyle(self.latstyle),
@@ -5173,10 +5177,10 @@ class Reach(River):
                 )
             if self.plottotal:
                 # total flow
-                self.get_total_flow(specificxs)
+                self.get_total_flow(specific_xs)
                 ax.plot(
                     self.TotalFlow.loc[start:end, "total"],
-                    label="US/BC \n+ Laterals",
+                    label="US/BC \n+ laterals",
                     zorder=self.totalorder,
                     linewidth=self.linewidth,
                     linestyle=V.getLineStyle(self.totalstyle),
@@ -5197,10 +5201,10 @@ class Reach(River):
         # specific XS
         if self.plothm:
             # first extract the time series of the given xs
-            self.read_1d_results(xsid=specificxs)
+            self.read_1d_results(xsid=specific_xs)
             # plot the xs
             ax.plot(
-                self.xs_hydrograph.loc[start:end, specificxs],
+                self.xs_hydrograph.loc[start:end, specific_xs],
                 label="RIM",
                 zorder=self.hmorder,
                 linewidth=self.linewidth,
@@ -5212,7 +5216,7 @@ class Reach(River):
         if hasattr(self, "routed_rrm"):
             try:
                 ax.plot(
-                    self.rrm_progression.loc[start:end, specificxs],
+                    self.rrm_progression.loc[start:end, specific_xs],
                     label="mHM",
                     zorder=self.rrmorder,
                     linewidth=self.linewidth,
@@ -5221,7 +5225,7 @@ class Reach(River):
                 )
             except KeyError:
                 logger.debug(
-                    " XS " + str(specificxs) + "does not exist in the  'routed_rrm'"
+                    " XS " + str(specific_xs) + "does not exist in the  'routed_rrm'"
                 )
         else:
             msg = (
@@ -5247,7 +5251,7 @@ class Reach(River):
 
                 ax.yaxis.set_ticks(np.arange(start, end, self.ylabels[0]))
 
-        ax.set_title("XS - " + str(specificxs), fontsize=20)
+        ax.set_title("XS - " + str(specific_xs), fontsize=20)
 
         ax.legend(fontsize=12)
         ax.set_xlabel("Time", fontsize=12)
@@ -5258,29 +5262,31 @@ class Reach(River):
 
     def calculate_q_metrics(
         self,
-        Calib,
-        stationname: int,
-        gaugexs: int,
-        Filter: bool = False,
+        calib,
+        station_name: int,
+        gauge_xs: int,
+        filter: bool = False,
         start: str = "",
         end: str = "",
         fmt: str = "%Y-%m-%d",
     ):
-        """CalculateQMetrics. calculates the performance metrices for the discharge time series.
+        """calculate_q_metrics.
+
+            calculate_q_metrics calculates the performance metrics for the discharge time series.
 
         Parameters
         ----------
-        Calib : TYPE
+        calib : TYPE
             DESCRIPTION.
-        stationname : TYPE
+        station_name : TYPE
             DESCRIPTION.
-        gaugexs : [int]
+        gauge_xs : [int]
             DESCRIPTION.
         start : [str]
             DESCRIPTION.
         end : [str]
             DESCRIPTION.
-        Filter : TYPE, optional
+        filter: TYPE, optional
             DESCRIPTION. The default is False.
         fmt: [string]
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
@@ -5288,7 +5294,7 @@ class Reach(River):
         Returns
         -------
         rmse: [float]
-            root mean square error.
+            root-mean-square error.
         kge: [float]
             Kling-gupta metric.
         wb: [float]
@@ -5298,39 +5304,39 @@ class Reach(River):
         nse: [float]
             Nash-sutcliffe metric.
         """
-        QHM = pd.DataFrame()
+        q_hm = pd.DataFrame()
 
         try:
-            GaugeStart = Calib.hm_gauges.loc[
-                Calib.hm_gauges["xsid"] == gaugexs, "Qstart"
+            gauge_start = calib.hm_gauges.loc[
+                calib.hm_gauges["xsid"] == gauge_xs, "Qstart"
             ].values[0]
-            GaugeEnd = Calib.hm_gauges.loc[
-                Calib.hm_gauges["xsid"] == gaugexs, "Qend"
+            gauge_end = calib.hm_gauges.loc[
+                calib.hm_gauges["xsid"] == gauge_xs, "Qend"
             ].values[0]
         except IndexError:
             logger.debug("The XS you provided does not exist in the hm_gauges")
             return
 
-        if Filter:
+        if filter:
             start = dt.datetime.strptime(start, fmt)
             end = dt.datetime.strptime(end, fmt)
             # get the latest date of the filter date and the first date in the result
             # get the earliest date of the end and the last date in the result
-            st2 = max(GaugeStart, start, self.first_day_results)
-            end2 = min(GaugeEnd, end, self.last_day)
+            st2 = max(gauge_start, start, self.first_day_results)
+            end2 = min(gauge_end, end, self.last_day)
 
             # get the observed discharge
-            Qobs = Calib.q_gauges.loc[st2:end2, stationname]
+            q_obs = calib.q_gauges.loc[st2:end2, station_name]
 
-            # resample the times series to average daily
+            # resample the time series to average daily
             ind = pd.date_range(
                 self.first_day_results, self.last_day + dt.timedelta(days=1), freq="h"
             )[:-1]
 
-            Q = self.results_1d[self.results_1d["xs"] == self.last_xs]
-            Q.index = ind
-            QHM["q"] = Q["q"].resample("D").mean()
-            QHM["q"] = QHM.loc[st2:end2, "q"]
+            q = self.results_1d[self.results_1d["xs"] == self.last_xs]
+            q.index = ind
+            q_hm["q"] = q["q"].resample("D").mean()
+            q_hm["q"] = q_hm.loc[st2:end2, "q"]
 
             # try:
             #     sub.Resample(gaugexs, 'q', starti, endi, delete=True)
@@ -5340,29 +5346,29 @@ class Reach(River):
             # q_hm.index = pd.date_range(st2, end2)
 
         else:
-            st2 = max(GaugeStart, self.first_day_results)
-            end2 = min(GaugeEnd, self.last_day)
+            st2 = max(gauge_start, self.first_day_results)
+            end2 = min(gauge_end, self.last_day)
             # get the observed discharge
-            Qobs = Calib.q_gauges.loc[st2:end2, stationname]
+            q_obs = calib.q_gauges.loc[st2:end2, station_name]
 
-            # resample the times series to average daily
+            # resample the time series to average daily
             ind = pd.date_range(
                 self.first_day_results, self.last_day + dt.timedelta(days=1), freq="h"
             )[:-1]
-            Q = self.results_1d[self.results_1d["xs"] == self.last_xs]
-            Q.index = ind
-            QHM["q"] = Q["q"].resample("D").mean()
-            QHM["q"] = QHM.loc[st2:end2, "q"]
+            q = self.results_1d[self.results_1d["xs"] == self.last_xs]
+            q.index = ind
+            q_hm["q"] = q["q"].resample("D").mean()
+            q_hm["q"] = q_hm.loc[st2:end2, "q"]
 
             # old
             # q_hm['q'] = sub.results_1d['q'][sub.results_1d['xs'] == gaugexs][sub.results_1d['hour'] == 24][:]
             # q_hm.index = pd.date_range(st2, end2)
-        qsim = QHM.loc[st2:end2, "q"].tolist()
-        rmse = round(metrics.rmse(Qobs, qsim), 0)
-        kge = round(metrics.kge(Qobs, qsim), 2)
-        wb = round(metrics.wb(Qobs, qsim), 0)
-        nsehf = round(metrics.nse_hf(Qobs, qsim), 2)
-        nse = round(metrics.nse(Qobs, qsim), 2)
+        qsim = q_hm.loc[st2:end2, "q"].tolist()
+        rmse = round(metrics.rmse(q_obs, qsim), 0)
+        kge = round(metrics.kge(q_obs, qsim), 2)
+        wb = round(metrics.wb(q_obs, qsim), 0)
+        nsehf = round(metrics.nse_hf(q_obs, qsim), 2)
+        nse = round(metrics.nse(q_obs, qsim), 2)
         logger.debug("--------------------")
         logger.debug("RMSE = " + str(rmse))
         logger.debug("KGE = " + str(kge))
@@ -5375,12 +5381,12 @@ class Reach(River):
     @class_method_parse(plot_discharge_args)
     def plot_wl(
         self,
-        Calib,
+        calib,
         start: str,
         end: str,
-        gaugexs: int,
-        stationname: str,
-        gaugename: str,
+        gauge_xs: int,
+        station_name: str,
+        gauge_name: str,
         *args,
         **kwargs,
         # gaugecolor: Union[tuple, str] = "#DC143C",
@@ -5402,17 +5408,17 @@ class Reach(River):
 
         Parameters
         ----------
-        Calib : TYPE
+        calib : TYPE
             DESCRIPTION.
         start : TYPE
             DESCRIPTION.
         end : TYPE
             DESCRIPTION.
-        gaugexs : TYPE
+        gauge_xs : TYPE
             DESCRIPTION.
-        stationname : TYPE
+        station_name : TYPE
             DESCRIPTION.
-        gaugename : TYPE
+        gauge_name : TYPE
             DESCRIPTION.
         kwargs:
             gaugecolor : TYPE, optional
@@ -5448,36 +5454,40 @@ class Reach(River):
         end = dt.datetime.strptime(end, self.fmt)
 
         if self.plotgauge:
-            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLstart"]
-            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs]["WLend"]
+            gauge_start = calib.hm_gauges[calib.hm_gauges["xsid"] == gauge_xs][
+                "WLstart"
+            ]
+            gauge_end = calib.hm_gauges[calib.hm_gauges["xsid"] == gauge_xs]["WLend"]
 
             try:
-                GaugeStart = GaugeStart.values[0]
-                GaugeEnd = GaugeEnd.values[0]
+                gauge_start = gauge_start.values[0]
+                gauge_end = gauge_end.values[0]
 
-                if GaugeStart > start and GaugeStart > end:
+                if gauge_start > start and gauge_start > end:
                     logger.debug(
-                        f"Availabel data for the gauge starts from {GaugeStart}"
+                        f"Available data for the gauge starts from {gauge_start}"
                     )
                     logger.debug(
                         f"The period you provided is between {start} and {end}"
                     )
-                    plotgauge = False
-                elif GaugeEnd < start and GaugeStart < end:
-                    logger.debug(f"Availabel data for the gauge starts from {GaugeEnd}")
+                    plot_gauge = False
+                elif gauge_end < start and gauge_start < end:
+                    logger.debug(
+                        f"Available data for the gauge starts from {gauge_end}"
+                    )
                     logger.debug("Out of Gauge dates")
-                    plotgauge = False
+                    plot_gauge = False
             except (IndexError, TypeError):
                 logger.debug("The XS you provided does not exist in the hm_gauges")
-                plotgauge = False
+                plot_gauge = False
 
         fig, ax = plt.subplots(ncols=1, nrows=1, figsize=self.figsize)
 
         # extract the water levels at the gauge cross-section
-        self.extract_xs(gaugexs)
+        self.extract_xs(gauge_xs)
 
         ax.plot(
-            self.xs_water_level.loc[start:end, gaugexs],
+            self.xs_water_level.loc[start:end, gauge_xs],
             label="RIM",
             zorder=self.hmorder,
             linewidth=self.linewidth,
@@ -5487,7 +5497,7 @@ class Reach(River):
 
         if self.plotgauge:
             ax.plot(
-                Calib.wl_gauges.loc[start:end, stationname],
+                calib.wl_gauges.loc[start:end, station_name],
                 label="Gauge",
                 zorder=self.gaugeorder,
                 linewidth=self.linewidth,
@@ -5498,7 +5508,7 @@ class Reach(River):
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, self.nxlabels))
 
-        ax.set_title("Water Level - " + gaugename, fontsize=20)
+        ax.set_title("Water Level - " + gauge_name, fontsize=20)
         plt.legend(fontsize=self.legendsize)
         ax.set_xlabel("Time", fontsize=15)
         ax.set_ylabel("Water Level m", fontsize=15)
@@ -5508,10 +5518,10 @@ class Reach(River):
 
     def calculate_wl_metrics(
         self,
-        Calib,
-        stationname: int,
-        gaugexs: int,
-        Filter: bool = False,
+        calib,
+        station_name: int,
+        gauge_xs: int,
+        filter: bool = False,
         start: Union[dt.datetime, str] = "",
         end: Union[dt.datetime, str] = "",
         fmt: str = "%Y-%m-%d",
@@ -5522,30 +5532,30 @@ class Reach(River):
             format of the date. fmt="%Y-%m-%d %H:%M:%S"
         """
         try:
-            GaugeStart = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
+            gauge_start = calib.hm_gauges[calib.hm_gauges["xsid"] == gauge_xs][
                 "WLstart"
             ].values[0]
-            GaugeEnd = Calib.hm_gauges[Calib.hm_gauges["xsid"] == gaugexs][
+            gauge_end = calib.hm_gauges[calib.hm_gauges["xsid"] == gauge_xs][
                 "WLend"
             ].values[0]
         except IndexError:
             logger.debug("The XS you provided does not exist in the hm_gauges")
             return
 
-        if isinstance(GaugeStart, int):
+        if isinstance(gauge_start, int):
             logger.debug("No water level data for this river reach")
             return
 
-        if Filter:
+        if filter:
             if isinstance(start, str):
                 start = dt.datetime.strptime(start, fmt)
             if isinstance(end, str):
                 end = dt.datetime.strptime(end, fmt)
 
-            st2 = max(GaugeStart, start, self.first_day_results)
-            end2 = min(GaugeEnd, end, self.last_day)
+            st2 = max(gauge_start, start, self.first_day_results)
+            end2 = min(gauge_end, end, self.last_day)
             # observed
-            obs = np.array(Calib.wl_gauges.loc[st2:end2, stationname])
+            obs = np.array(calib.wl_gauges.loc[st2:end2, station_name])
 
             # RIM
             ind = pd.date_range(
@@ -5565,16 +5575,16 @@ class Reach(River):
             #                   River.DateToIndex(end2), delete = False)
             # series1 = np.array(sub.resampled_wl[gaugexs])
         else:
-            st2 = max(GaugeStart, self.first_day_results)
-            end2 = min(GaugeEnd, self.last_day)
+            st2 = max(gauge_start, self.first_day_results)
+            end2 = min(gauge_end, self.last_day)
             # Observed
-            obs = np.array(Calib.wl_gauges.loc[st2:end2, stationname])
+            obs = np.array(calib.wl_gauges.loc[st2:end2, station_name])
 
             # RIM
             ind = pd.date_range(
                 self.first_day_results, self.last_day + dt.timedelta(days=1), freq="h"
             )[:-1]
-            mod = self.results_1d[self.results_1d["xs"] == gaugexs]
+            mod = self.results_1d[self.results_1d["xs"] == gauge_xs]
             mod.index = ind
             mod = mod["wl"].resample("D").mean()
             mod = mod.loc[st2:end2]
@@ -5586,42 +5596,28 @@ class Reach(River):
 
         if len(obs) != len(mod) or len(mod) == 0:
             logger.debug(
-                "Availabel data for the gauge starts from "
-                + str(GaugeStart)
+                "Available data for the gauge starts from "
+                + str(gauge_start)
                 + " To "
-                + str(GaugeEnd)
+                + str(gauge_end)
             )
             return
 
-        MBE = round(metrics.mbe(obs, mod), 2)
-        MAE = round(metrics.mae(obs, mod), 2)
-        RMSE = round(metrics.rmse(obs, mod), 2)
-        KGE = round(metrics.kge(obs, mod), 2)
-        NSEHF = round(metrics.nse_hf(obs, mod), 2)
-        NSE = round(metrics.nse(obs, mod), 2)
+        mbe = round(metrics.mbe(obs, mod), 2)
+        mae = round(metrics.mae(obs, mod), 2)
+        rmse = round(metrics.rmse(obs, mod), 2)
+        kge = round(metrics.kge(obs, mod), 2)
+        nsehf = round(metrics.nse_hf(obs, mod), 2)
+        nse = round(metrics.nse(obs, mod), 2)
 
-        logger.debug("RMSE= " + str(RMSE))
-        logger.debug("KGE= " + str(KGE))
-        logger.debug("NSEHF= " + str(NSEHF))
-        logger.debug("NSE= " + str(NSE))
-        logger.debug("MBE= " + str(MBE))
-        logger.debug("MAE= " + str(MAE))
+        logger.debug("rmse= " + str(rmse))
+        logger.debug("kge= " + str(kge))
+        logger.debug("nsehf= " + str(nsehf))
+        logger.debug("nse= " + str(nse))
+        logger.debug("mbe= " + str(mbe))
+        logger.debug("mae= " + str(mae))
 
-        return MBE, MAE, RMSE, KGE, NSEHF, NSE
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-        logger.debug("\n")
-        logger.debug(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__}  Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")
+        return mbe, mae, rmse, kge, nsehf, nse
 
     def plot_bc(self, date: str, fmt: str = "%Y-%m-%d"):
         """PlotBC. plot the boundary condition discharge and water depth.
