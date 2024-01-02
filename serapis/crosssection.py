@@ -1,7 +1,4 @@
-"""Cross section model Created on Fri Apr  3 09:33:24 2020.
-
-@author: mofarrag
-"""
+"""Cross-section model."""
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
