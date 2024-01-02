@@ -441,7 +441,7 @@ def test_InspectGauge(
     Calib.hm_vs_rrm()
     Calib.rrm_vs_observed()
     gaugei = 0
-    summary, fig, ax = Calib.Inspect_gauge(InspectGauge_sub_id, gaugei=gaugei)
+    summary, fig, ax = Calib.inspect_gauge(InspectGauge_sub_id, gauge_id=gaugei)
     assert isinstance(fig, Figure)
     assert isinstance(summary, DataFrame)
     assert all(elem in summary.columns.to_list() for elem in Metrics_table_columns)
@@ -484,4 +484,4 @@ def test_SaveMetices(
     Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
     Calib.hm_vs_rrm()
     Calib.rrm_vs_observed()
-    Calib.save_metices(hm_saveto)
+    Calib.save_metrices(hm_saveto)

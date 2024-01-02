@@ -67,33 +67,29 @@ class Calibration(River):
         fmt: str = "%Y-%m-%d",
         rrm_start: str = None,
         rrm_days: int = 36890,
-        novalue: int = -9,
+        no_data_value: int = -9,
         gauge_id_col: Any = "oid",
     ):
         """HMCalibration.
 
-        To instantiate the HMCalibration object you have to provide the
-        following arguments
+            To instantiate the calibration object, you have to provide the following arguments.
 
         Parameters
         ----------
         name : [str]
             name of the catchment.
-        version : [integer], optional
+        version: [integer], optional
             The version of the model. The default is 3.
-        start : [str], optional
+        start: [str], optional
             starting date. The default is "1950-1-1".
-        days : [integer], optional
-            length of the simulation. The default is 36890.
-            (default number of days are equivalent to 100 years)
-        fmt : [str]
+        days: [integer], optional
+            length of the simulation. The default is 36890. (default number of days is equivalent to 100 years)
+        fmt: [str]
             format of the given dates. The default is "%Y-%m-%d"
-        rrm_start : [str], optional
-            the start date of the rainfall-runoff data. The default is
-            "1950-1-1".
-        rrm_days : [integer], optional
-            the length of the data of the rainfall-runoff data in days.
-            The default is 36890.
+        rrm_start: [str], optional
+            the start date of the rainfall-runoff data. The default is "1950-1-1".
+        rrm_days: [integer], optional
+            the length of the data of the rainfall-runoff data in days. The default is 36890.
         gauge_id_col: [Any]
             the name of the column where the used id of the gauges is stored. Default is 'oid'
 
@@ -108,12 +104,12 @@ class Calibration(River):
             self.start = dt.datetime.strptime(start, fmt)
         self.end = self.start + dt.timedelta(days=days)
         self.days = days
-        self.novalue = novalue
+        self.no_data_value = no_data_value
         self.gauge_id_col = gauge_id_col
 
-        Ref_ind = pd.date_range(self.start, self.end, freq="D")
+        ref_ind = pd.date_range(self.start, self.end, freq="D")
         self.reference_index = pd.DataFrame(index=list(range(1, days + 1)))
-        self.reference_index["date"] = Ref_ind[:-1]
+        self.reference_index["date"] = ref_ind[:-1]
 
         if rrm_start is None:
             self.rrm_start = self.start
@@ -122,8 +118,7 @@ class Calibration(River):
                 self.rrm_start = dt.datetime.strptime(rrm_start, fmt)
             except ValueError:
                 logger.debug(
-                    f"plese check the fmt ({fmt}) you entered as it is different from the"
-                    f" rrm_start data ({rrm_start})"
+                    f"please check the fmt ({fmt}) you entered as it is different from the rrm_start data ({rrm_start})"
                 )
                 return
 
@@ -140,7 +135,7 @@ class Calibration(River):
         Parameters
         ----------
         path : [String]
-            the path to the text file of the gauges table. the file can be geojson or a csv file.
+            the path to the text file of the gauges' table. the file can be geojson or a csv file.
         >>> "gauges.geojson"
         >>> {
         >>> "type": "FeatureCollection", "crs":
@@ -186,18 +181,20 @@ class Calibration(River):
             )
             self.hm_gauges = pd.read_csv(path)
 
-        # sort the gauges table based on the reach
+        # sort the gauges' table based on the reach
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
-    def get_gauges(self, reach_id: int, gaugei: int = 0) -> DataFrame:
-        """Get gauges.
+    def get_gauges(self, reach_id: int, gauge_id: int = 0) -> DataFrame:
+        """get_gauges.
 
             get the id of the station for a given river reach.
 
         Parameters
         ----------
         reach_id: [int]
-            the river reach id
+            the river reach id.
+        gauge_id: [int]
+            gauge id. Default is 0.
 
         Returns
         -------
@@ -215,15 +212,15 @@ class Calibration(River):
                 "The given river reach does not have gauges in the gauge table"
             )
         elif len(gauges) > 1:
-            f = gauges.loc[gaugei, :].to_frame()
+            f = gauges.loc[gauge_id, :].to_frame()
             gauge = pd.DataFrame(index=[0], columns=f.index.to_list())
-            gauge.loc[0, :] = f.loc[f.index.to_list(), gaugei].values.tolist()
+            gauge.loc[0, :] = f.loc[f.index.to_list(), gauge_id].values.tolist()
             return gauge
         else:
             return gauges
         # stationname = gauges.loc[:, column].values.tolist()
-        # gaugename = str(gauges.loc[gaugei, 'name'])
-        # gaugexs = gauges.loc[gaugei, 'xsid']
+        # gaugename = str(gauges.loc[gauge_id, 'name'])
+        # gaugexs = gauges.loc[gauge_id, 'xsid']
         # reach_xs = str(reach_id) + "_" + str(gaugexs)
 
         # stationname, gaugename, gaugexs
@@ -233,7 +230,7 @@ class Calibration(River):
         path: str,
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
-        novalue: Union[int, float],
+        no_data_value: Union[int, float],
         fmt="%Y-%m-%d",
         file_extension: str = ".txt",
         gauge_date_format="%Y-%m-%d",
@@ -244,30 +241,29 @@ class Calibration(River):
 
         Parameters
         ----------
-        path : [String]
-              path to the folder containing the text files of the water
-              level gauges
-        start : [datetime object/str]
+        path: [str]
+              path to the folder containing the text files of the water level gauges.
+        start: [datetime object/str]
             the starting date of the water level time series.
-        end : [datetime object/str]
+        end: [datetime object/str]
             the end date of the water level time series.
-        novalue : [integer/float]
+        no_data_value : [integer/float]
             value used to fill the missing values.
-        fmt : [str]
+        fmt: [str]
             format of the given dates. The default is "%Y-%m-%d"
         file_extension: [str]
             extension of the files. Default is ".txt"
         gauge_date_format: [str]
-            format of the date in the first column in the gauges files. Default is "%Y-%m-%d".
+            format of the date in the first column in the gauges' files. Default is "%Y-%m-%d".
 
         Returns
         -------
-        wl_gauges: [dataframe attiribute].
+        wl_gauges: [dataframe attribute].
             dataframe containing the data of the water level gauges and
             the index as the time series from the StartDate till the end
             and the gaps filled with the NoValue
-        hm_gauges:[dataframe attiribute].
-            in the the hm_gauges dataframe two new columns are inserted
+        hm_gauges:[dataframe attribute].
+            in the hm_gauges dataframe, two new columns are inserted
             ["WLstart", "WLend"] for the start and end date of the time
             series.
         """
@@ -279,8 +275,8 @@ class Calibration(River):
         columns = self.hm_gauges[self.gauge_id_col].tolist()
 
         ind = pd.date_range(start, end)
-        Gauges = pd.DataFrame(index=ind)
-        Gauges.loc[:, 0] = ind
+        gauges = pd.DataFrame(index=ind)
+        gauges.loc[:, 0] = ind
         logger.debug("Reading water level gauges data")
         for i in range(len(columns)):
             if self.hm_gauges.loc[i, "waterlevel"] == 1:
@@ -301,13 +297,13 @@ class Calibration(River):
                     # reindex
                     f.index = list(range(len(f)))
                     # add datum and convert to meter
-                    f.loc[f[1] != novalue, 1] = (
-                        f.loc[f[1] != novalue, 1] / 100
+                    f.loc[f[1] != no_data_value, 1] = (
+                        f.loc[f[1] != no_data_value, 1] / 100
                     ) + self.hm_gauges.loc[i, "datum(m)"]
                     f = f.rename(columns={1: columns[i]})
 
                     # use merge as there are some gaps in the middle
-                    Gauges = Gauges.merge(f, on=0, how="left", sort=False)
+                    gauges = gauges.merge(f, on=0, how="left", sort=False)
 
                     logger.debug(f"{i} - {path}{name}{file_extension} is read")
 
@@ -315,20 +311,20 @@ class Calibration(River):
                     logger.debug(f"{i} - {path}{name}{file_extension} has a problem")
                     return
 
-        Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
-        Gauges.index = ind
-        del Gauges[0]
-        self.wl_gauges = Gauges
+        gauges.replace(to_replace=np.nan, value=no_data_value, inplace=True)
+        gauges.index = ind
+        del gauges[0]
+        self.wl_gauges = gauges
 
         self.hm_gauges["WLstart"] = 0
         self.hm_gauges["WLend"] = 0
         for i in range(len(columns)):
             if self.hm_gauges.loc[i, "waterlevel"] == 1:
                 st1 = self.wl_gauges[columns[i]][
-                    self.wl_gauges[columns[i]] != novalue
+                    self.wl_gauges[columns[i]] != no_data_value
                 ].index[0]
                 end1 = self.wl_gauges[columns[i]][
-                    self.wl_gauges[columns[i]] != novalue
+                    self.wl_gauges[columns[i]] != no_data_value
                 ].index[-1]
                 self.hm_gauges.loc[i, "WLstart"] = st1
                 self.hm_gauges.loc[i, "WLend"] = end1
@@ -364,7 +360,7 @@ class Calibration(River):
     #             # use merge as there are some gaps in the middle
     #             Gauges = Gauges.merge(f, on=0, how="left", sort=False)
     #
-    #     Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+    #     Gauges.replace(to_replace=np.nan, value=no_data_value, inplace=True)
     #     Gauges.index = ind
     #     del Gauges[0]
 
@@ -373,14 +369,14 @@ class Calibration(River):
         path: str,
         start: Union[str, dt.datetime],
         end: Union[str, dt.datetime],
-        novalue: Union[int, float],
+        no_data_value: Union[int, float],
         fmt: str = "%Y-%m-%d",
         file_extension: str = ".txt",
         gauge_date_format="%Y-%m-%d",
     ):
         """readObservedQ.
 
-            ReadObservedQ method reads discharge data and store it in a dataframe
+            ReadObservedQ method reads discharge data and, stores it in a dataframe
             attribute "q_gauges"
 
         Parameters
@@ -391,20 +387,20 @@ class Calibration(River):
             starting date of the time series.
         end: [datetime object]
             ending date of the time series.
-        novalue: [numeric]
+        no_data_value: [numeric]
             value stored in gaps.
         fmt : [str]
             format of the given dates. The default is "%Y-%m-%d"
         file_extension: [str]
             extension of the files. Default is ".txt"
         gauge_date_format: [str]
-            format of the date in the first column in the gauges files. Default is "%Y-%m-%d".
+            format of the date in the first column in the gauges' files. Default is "%Y-%m-%d".
 
         Returns
         -------
         q_gauges:[dataframe attribute]
             dataframe containing the hydrograph of each gauge under a column
-             by the name of  gauge.
+             by the name of gauge.
         hm_gauges:[dataframe attribute]
             in the hm_gauges dataframe two new columns are inserted
             ["Qstart", "Qend"] containing the start and end date of the
@@ -445,7 +441,7 @@ class Calibration(River):
                 # use merge as there are some gaps in the middle
                 gauges = gauges.merge(f, on=0, how="left", sort=False)
 
-        gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+        gauges.replace(to_replace=np.nan, value=no_data_value, inplace=True)
         gauges.index = ind
         del gauges[0]
         # try:
@@ -466,16 +462,16 @@ class Calibration(River):
         for i in range(len(self.hm_gauges)):
             if self.hm_gauges.loc[i, "discharge"] == 1:
                 ii = self.hm_gauges.loc[i, self.gauge_id_col]
-                st1 = self.q_gauges[ii][self.q_gauges[ii] != novalue].index[0]
-                end1 = self.q_gauges[ii][self.q_gauges[ii] != novalue].index[-1]
+                st1 = self.q_gauges[ii][self.q_gauges[ii] != no_data_value].index[0]
+                end1 = self.q_gauges[ii][self.q_gauges[ii] != no_data_value].index[-1]
                 self.hm_gauges.loc[i, "Qstart"] = st1
                 self.hm_gauges.loc[i, "Qend"] = end1
 
     def read_rrm(
         self,
         path: str,
-        fromday: Union[str, int] = "",
-        today: Union[str, int] = "",
+        from_day: Union[str, int] = "",
+        to_day: Union[str, int] = "",
         fmt: str = "%Y-%m-%d",
         location: int = 1,
         path2: str = "",
@@ -483,26 +479,26 @@ class Calibration(River):
         """ReadRRM.
 
             ReadRRM method reads the discharge results of the rainfall runoff
-            model and store it in a dataframe attribute "q_rrm"
+            model and stores it in a dataframe attribute "q_rrm"
 
         Parameters
         ----------
         path : [String]
             path to the folder where files for the gauges exist.
-        fromday : [datetime object]
+        from_day: [datetime object]
             starting date of the time series.
-        today : [datetime object]
+        to_day: [datetime object]
             ending date of the time series.
-        fmt : [str]
+        fmt: [str]
             format of the given dates. The default is "%Y-%m-%d"
         location: [int]
             the RRM hydrographs for a 2nd location
-        path2 : [str]
+        path2: [str]
             directory where the RRM hydrographs for the 2nd location are saved
 
         Returns
         -------
-        q_rrm : [dataframe]
+        q_rrm: [dataframe]
             rainfall-runoff discharge time series stored in a dataframe with
             the columns as the gauges id and the index are the time.
         rrm_gauges: [list]
@@ -516,7 +512,7 @@ class Calibration(River):
         if location == 2:
             # create a dataframe for the 2nd time series of the rainfall runoff
             # model at the second location
-            self.QRRM2 = pd.DataFrame()
+            self.rrm_discharge_2 = pd.DataFrame()
 
         self.rrm_gauges = []
         if path == "":
@@ -525,8 +521,7 @@ class Calibration(River):
         if location == 2:
             if path2 == "":
                 raise ValueError(
-                    "path2 argument has to be given for the location of the 2nd rainfall run-off time "
-                    "series"
+                    "path2 argument has to be given for the location of the 2nd rainfall run-off time series"
                 )
 
         if location == 1:
@@ -538,8 +533,8 @@ class Calibration(River):
                         self.rrm_reference_index,
                         path,
                         station_id,
-                        fromday,
-                        today,
+                        from_day,
+                        to_day,
                         date_format=fmt,
                     )[station_id].tolist()
                     logger.info(f"{i} - {path}{station_id}.txt is read")
@@ -557,17 +552,17 @@ class Calibration(River):
                         self.rrm_reference_index,
                         path,
                         station_id,
-                        fromday,
-                        today,
+                        from_day,
+                        to_day,
                         date_format=fmt,
                     )[station_id].tolist()
-                    self.QRRM2[station_id] = self._read_rrm_results(
+                    self.rrm_discharge_2[station_id] = self._read_rrm_results(
                         self.version,
                         self.rrm_reference_index,
                         path2,
                         station_id,
-                        fromday,
-                        today,
+                        from_day,
+                        to_day,
                         date_format=fmt,
                     )[station_id].tolist()
                     logger.info(f"{i} - {path}{station_id}.txt is read")
@@ -578,29 +573,29 @@ class Calibration(River):
                     )
         # logger.debug("RRM time series for the gauge " + str(station_id) + " is read")
 
-        if fromday == "":
-            fromday = 1
-        if today == "":
-            today = len(self.q_rrm[self.q_rrm.columns[0]])
+        if from_day == "":
+            from_day = 1
+        if to_day == "":
+            to_day = len(self.q_rrm[self.q_rrm.columns[0]])
 
-        start = self.reference_index.loc[fromday, "date"]
-        end = self.reference_index.loc[today, "date"]
+        start = self.reference_index.loc[from_day, "date"]
+        end = self.reference_index.loc[to_day, "date"]
 
         if location == 1:
             self.q_rrm.index = pd.date_range(start, end, freq="D")
         else:
             self.q_rrm.index = pd.date_range(start, end, freq="D")
-            self.QRRM2.index = pd.date_range(start, end, freq="D")
+            self.rrm_discharge_2.index = pd.date_range(start, end, freq="D")
 
     def read_hm_discharge(
         self,
         path: str,
         from_day: Union[str, int] = "",
         to_day: Union[str, int] = "",
-        novalue: Union[int, float] = -9,
-        addHQ2: bool = False,
+        no_data_value: Union[int, float] = -9,
+        add_hq2: bool = False,
         shift: bool = False,
-        shiftsteps: int = 0,
+        shift_steps: int = 0,
         fmt: str = "%Y-%m-%d",
     ):
         """ReadHMQ.
@@ -609,34 +604,33 @@ class Calibration(River):
 
         Parameters
         ----------
-        path : [String]
+        path: [String]
             path to the folder where files for the gauges exist.
-        from_day : [datetime object/str]
+        from_day: [datetime object/str]
             starting date of the time series.
-        to_day : [integer]
-            length of the simulation (how many days after the start date) .
-        novalue : [numeric value]
+        to_day: [integer]
+            length of the simulation (how many days after the start date).
+        no_data_value: [numeric value]
             the value used to fill the gaps in the time series or to fill the
-            days that is not simulated (discharge is less than threshold).
-        addHQ2 : [bool]
+            days that is not simulated (discharge is less than a threshold).
+        add_hq2: [bool]
             for version 1 the HQ2 can be added to the simulated hydrograph to
-            compare it with the gauge data.default is False.
-        shift : [bool]
+            compare it with the gauge data. default is False.
+        shift: [bool]
             boolean value to decide whither to shift the time series or not.
             default is False.
-        shiftsteps : [integer]
-            number of time steps to shift the time series, could be negative
-            integer to shift the time series beackward. default is 0.
-        fmt : [str]
+        shift_steps: [integer]
+            number of time steps to shift the time series could be negative integer to shift the time series
+            backward. default is 0.
+        fmt: [str]
             format of the given dates. The default is "%Y-%m-%d"
 
         Returns
         -------
-        q_hm : [dataframe attribute]
-            dataframe containing the simulated hydrograph for each river
-            reach in the catchment.
+        q_hm: [dataframe attribute]
+            dataframe containing the simulated hydrograph for each river reach in the catchment.
         """
-        if addHQ2 and self.version == 1:
+        if add_hq2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
             assert hasattr(self, "river_network"), msg
             msg = "please read the HQ file first using ReturnPeriod method"
@@ -645,7 +639,7 @@ class Calibration(River):
         gauges = self.hm_gauges.loc[
             self.hm_gauges["discharge"] == 1, self.gauge_id_col
         ].tolist()
-        self.QgaugesList = gauges
+        self.discharge_gauges_list = gauges
         self.q_hm = pd.DataFrame()
 
         # for RIM1.0 don't fill with -9 as the empty days will be filled
@@ -653,24 +647,24 @@ class Calibration(River):
         # if self.version == 1:
         #     q_hm.loc[:, :] = 0
         # else:
-        #     q_hm.loc[:, :] = novalue
+        #     q_hm.loc[:, :] = no_data_value
 
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
-            nodeid = gauges[i]
-            self.q_hm[nodeid] = self._read_rrm_results(
+            node_id = gauges[i]
+            self.q_hm[node_id] = self._read_rrm_results(
                 self.version,
                 self.reference_index,
                 path,
-                nodeid,
+                node_id,
                 from_day=None,
                 to_day=None,
                 date_format=fmt,
-            )[nodeid].tolist()
-            logger.debug(f"{i} - {path}{nodeid}.txt is read")
+            )[node_id].tolist()
+            logger.debug(f"{i} - {path}{node_id}.txt is read")
 
-            if addHQ2 and self.version == 1:
-                USnode = self.river_network.loc[
+            if add_hq2 and self.version == 1:
+                upstream_node = self.river_network.loc[
                     np.where(
                         self.river_network["id"]
                         == self.hm_gauges.loc[i, self.gauge_id_col]
@@ -678,8 +672,10 @@ class Calibration(River):
                     "us",
                 ]
 
-                CutValue = self.RP.loc[np.where(self.RP["node"] == USnode)[0][0], "HQ2"]
-                print(CutValue)
+                cut_value = self.RP.loc[
+                    np.where(self.RP["node"] == upstream_node)[0][0], "HQ2"
+                ]
+                print(cut_value)
 
             # for j in range(len(f1)):
             #     # if the index exist in the original list
@@ -689,12 +685,12 @@ class Calibration(River):
             #     else:
             #         # if it does not exist put zero
             #         if add_hq2 and self.version == 1:
-            #             f2.append(CutValue)
+            #             f2.append(cut_value)
             #         else:
             #             f2.append(0)
 
             # if shift:
-            #     f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
+            #     f2[shift_steps:-1] = f2[0 : -(shift_steps + 1)]
 
             # q_hm.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], q_hm.columns[i]] = f2
         if from_day == "":
@@ -712,9 +708,9 @@ class Calibration(River):
         path: str,
         from_day: Union[str, int] = "",
         to_day: Union[str, int] = "",
-        novalue: Union[int, float] = -9,
+        no_data_value: Union[int, float] = -9,
         shift=False,
-        shiftsteps=0,
+        shift_steps=0,
         column: str = "oid",
         fmt: str = "%Y-%m-%d",
     ):
@@ -722,32 +718,31 @@ class Calibration(River):
 
         Parameters
         ----------
-            1-path : [String]
-                path to the folder where files for the gauges exist.
-            2-start : [datetime object/str]
-                starting date of the time series.
-            3-days : [integer]
-                length of the simulation (how many days after the start date) .
-            4-novalue : [numeric value]
-                the value used to fill the gaps in the time series or to fill the
-                days that is not simulated (discharge is less than threshold).
-            5-shift : [bool]
-                boolean value to decide whither to shift the time series or not.
-                default is False.
-            6-shiftsteps : [integer]
-                number of time steps to shift the time series, could be negative
-                integer to shift the time series beackward. default is 0.
-            7-column : [string]
-                name of the column that contains the gauges file name. default is
-                'oid'.
-            8-fmt : [str]
-                format of the given dates. The default is "%Y-%m-%d"
+        path: [String]
+            path to the folder where files for the gauges exist.
+        from_day: [datetime object/str]
+            starting date of the time series.
+        to_day: [integer]
+            end date of the time series.
+        no_data_value: [numeric value]
+            the value used to fill the gaps in the time series or to fill the
+            days that is not simulated (discharge is less than a threshold).
+        shift: [bool]
+            boolean value to decide whither to shift the time series or not.
+            default is False.
+        shift_steps: [integer]
+            number of time steps to shift the time series could be negative
+            integer to shift the time series backward. default is 0.
+        column: [string]
+            name of the column that contains the gauges' file name. default is 'oid'.
+        fmt: [str]
+            format of the given dates. The default is "%Y-%m-%d".
 
         Returns
         -------
-            wl_hm : [dataframe attribute]
-                dataframe containing the simulated water level hydrograph for
-                each river reach in the catchment.
+        wl_hm: [dataframe attribute]
+            dataframe containing the simulated water level hydrograph for
+            each river reach in the catchment.
         """
         gauges = self.hm_gauges.loc[
             self.hm_gauges["waterlevel"] == 1, self.gauge_id_col
@@ -756,17 +751,17 @@ class Calibration(River):
 
         self.wl_hm = pd.DataFrame()
         for i in range(len(gauges)):
-            nodeid = gauges[i]
-            self.wl_hm[nodeid] = self._read_rrm_results(
+            node_id = gauges[i]
+            self.wl_hm[node_id] = self._read_rrm_results(
                 self.version,
                 self.reference_index,
                 path,
-                nodeid,
+                node_id,
                 from_day="",
                 to_day="",
                 date_format=fmt,
-            )[nodeid].tolist()
-            logger.debug(f"{i} - {path}{nodeid}.txt is read")
+            )[node_id].tolist()
+            logger.debug(f"{i} - {path}{node_id}.txt is read")
         # for i in range(len(wl_hm.columns)):
         #     f = np.loadtxt(path + str(int(wl_hm.columns[i])) + ".txt", delimiter=",")
         #
@@ -782,7 +777,7 @@ class Calibration(River):
         #             f2.append(0)
         #
         #     if shift:
-        #         f2[shiftsteps:-1] = f2[0 : -(shiftsteps + 1)]
+        #         f2[shift_steps:-1] = f2[0 : -(shift_steps + 1)]
 
         # wl_hm.loc[ind[f1[0] - 1] : ind[f1[-1] - 1], wl_hm.columns[i]] = f2
         if from_day == "":
@@ -795,35 +790,34 @@ class Calibration(River):
 
         self.wl_hm.index = pd.date_range(start, end, freq="D")
 
-    def read_caliration_result(self, reach_id: int, path: str = ""):
-        """ReadCalirationResult.
+    def read_calibration_result(self, reach_id: int, path: str = ""):
+        """read_calibration_result.
 
-        ReadCalirationResult method reads the 1D results and fill the missing
-        days in the middle
+            read_calibration_result method reads the 1D results and fills the missing days in the middle.
 
         Parameters
         ----------
-        reach_id : [integer]
+        reach_id: [integer]
             ID of the sub-basin you want to read its data.
-        path : [String], optional
+        path: [String], optional
             Path to read the results from. The default is ''.
 
         Returns
         -------
         calibration_q : [dataframe]
-            the discharge time series of the  calibrated gauges
+            the discharge time series of the calibrated gauges.
         calibration_wl : [dataframe]
-            the water level time series of the  calibrated gauges
+            the water level time series of the calibrated gauges.
         """
         hasattr(self, "q_gauges"), "Please read the discharge gauges first"
         hasattr(self, "WlGauges"), "Please read the water level gauges first"
 
         if not hasattr(self, "calibration_q"):
-            indD = pd.date_range(self.start, self.end, freq="D")[:-1]
-            self.CalibrationQ = pd.DataFrame(index=indD)
+            ind_d = pd.date_range(self.start, self.end, freq="D")[:-1]
+            self.CalibrationQ = pd.DataFrame(index=ind_d)
         if not hasattr(self, "calibration_wl"):
-            indD = pd.date_range(self.start, self.end, freq="D")[:-1]
-            self.CalibrationWL = pd.DataFrame(index=indD)
+            ind_d = pd.date_range(self.start, self.end, freq="D")[:-1]
+            self.CalibrationWL = pd.DataFrame(index=ind_d)
 
         ind = pd.date_range(self.start, self.end, freq="H")[:-1]
         q = pd.read_csv(path + str(reach_id) + "_q.txt", header=None, delimiter=r"\s+")
@@ -838,17 +832,16 @@ class Calibration(River):
         self.CalibrationWL[reach_id] = wl[1].resample("D").mean()
 
     def get_annual_max(
-        self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
+        self, option=1, corresponding_to=dict(MaxObserved=" ", TimeWindow=0)
     ):
-        """getAnnualMax.
+        """get_annual_max.
 
-        GetAnnualMax method get the max annual time series out of time series
-        of any temporal resolution, the code assumes that the hydrological
-        year is 1-Nov/31-Oct (Petrow and Merz, 2009, JoH).
+            get_annual_max method gets the max annual time series out of time series of any temporal resolution.
+            The code assumes that the hydrological year is 1-Nov/31-Oct (Petrow and Merz, 2009, JoH).
 
         Parameters
         ----------
-        option : [integer], optional
+        option: [integer], optional
             - 1 for the historical observed Discharge data.
             - 2 for the historical observed water level data.
             - 3 for the rainfall-runoff data.
@@ -856,20 +849,16 @@ class Calibration(River):
             - 5 for the hm water level result.
             The default is 1.
 
-        CorespondingTo: [Dict], optional
-            - if you want to extract the max annual values from the observed
-            discharge time series (CorespondingTo=dict(MaxObserved = "Q") and
-            then extract the values of the same dates in the simulated time
-            series. The same for observed water level time series
-            (CorespondingTo=dict(MaxObserved = "WL").
-            or if you just want to extract the max annual values from
-            each time series (CorespondingTo=dict(MaxObserved = " ").
-            The default is " ".
+        corresponding_to: [Dict], optional
+            - if you want to extract the max annual values from the observed discharge time series (
+            corresponding_to=dict(MaxObserved = "Q") and then extract the values of the same dates in the simulated time
+            series. The same for observed water level time series (corresponding_to=dict(MaxObserved = "WL").
+            or if you just want to extract the max annual values from each time series (corresponding_to=dict(
+            MaxObserved = " "). The default is " ".
 
-            - if you want to extract some values before and after the
-            coresponding date and then take the max value of all extracted
-            values specify the number of days using the keyword Window
-            CorespondingTo=dict(TimeWindow =  1)
+            - if you want to extract some values before and after the corresponding date and then take the max value
+            of all extracted values specify the number of days using the keyword Window corresponding_to=dict(
+            TimeWindow = 1)
 
         Returns
         -------
@@ -919,196 +908,200 @@ class Calibration(River):
                 )
             columns = self.wl_hm.columns.tolist()
 
-        if CorespondingTo["MaxObserved"] == "WL":
+        if corresponding_to["MaxObserved"] == "WL":
             if not isinstance(self.wl_gauges, DataFrame):
                 raise ValueError(
                     "please read the observed Water level data first with the "
                     "ReadObservedWL method"
                 )
 
-            startdate = self.wl_gauges.index[0]
-            AnnualMax = (
+            start_date = self.wl_gauges.index[0]
+            annual_max = (
                 self.wl_gauges.loc[:, self.wl_gauges.columns[0]].resample("A-OCT").max()
             )
             self.AnnualMaxDates = pd.DataFrame(
-                index=AnnualMax.index, columns=self.wl_gauges.columns
+                index=annual_max.index, columns=self.wl_gauges.columns
             )
 
-            # get the dates when the max value happen every year
+            # get the dates when the max value happens every year
             for i in range(len(self.wl_gauges.columns)):
                 sub = self.wl_gauges.columns[i]
-                for j in range(len(AnnualMax)):
+                for j in range(len(annual_max)):
                     if j == 0:
-                        f = self.wl_gauges.loc[startdate : AnnualMax.index[j], sub]
-                        self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
+                        f = self.wl_gauges.loc[start_date : annual_max.index[j], sub]
+                        self.AnnualMaxDates.loc[annual_max.index[j], sub] = f.index[
                             f.argmax()
                         ]
                     else:
                         f = self.wl_gauges.loc[
-                            AnnualMax.index[j - 1] : AnnualMax.index[j], sub
+                            annual_max.index[j - 1] : annual_max.index[j], sub
                         ]
-                        self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
+                        self.AnnualMaxDates.loc[annual_max.index[j], sub] = f.index[
                             f.argmax()
                         ]
 
             # extract the values at the dates of the previous max value
-            AnnualMax = pd.DataFrame(index=self.AnnualMaxDates.index, columns=columns)
+            annual_max = pd.DataFrame(index=self.AnnualMaxDates.index, columns=columns)
 
             # Extract time series
             for i in range(len(columns)):
-                Sub = columns[i]
-                QTS = list()
+                sub = columns[i]
+                qts = list()
 
                 if option == 1:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_gauges.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_gauges.loc[start:end, sub].max())
                 elif option == 2:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
+                        date = self.AnnualMaxDates.loc[ind, sub]
                         start = date - dt.timedelta(days=1)
                         end = date + dt.timedelta(days=1)
-                        QTS.append(self.wl_gauges.loc[start:end, Sub].max())
+                        qts.append(self.wl_gauges.loc[start:end, sub].max())
                 elif option == 3:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_rrm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_rrm.loc[start:end, sub].max())
                 elif option == 4:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_hm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_hm.loc[start:end, sub].max())
                 else:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.wl_hm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.wl_hm.loc[start:end, sub].max())
 
-                AnnualMax.loc[:, Sub] = QTS
+                annual_max.loc[:, sub] = qts
 
-        elif CorespondingTo["MaxObserved"] == "Q":
+        elif corresponding_to["MaxObserved"] == "Q":
             if not isinstance(self.q_gauges, DataFrame):
                 raise ValueError(
                     "please read the observed Discharge data first with the"
                     "ReadObservedQ method"
                 )
-            startdate = self.q_gauges.index[0]
-            AnnualMax = (
+            start_date = self.q_gauges.index[0]
+            annual_max = (
                 self.q_gauges.loc[:, self.q_gauges.columns[0]].resample("A-OCT").max()
             )
             self.AnnualMaxDates = pd.DataFrame(
-                index=AnnualMax.index, columns=self.q_gauges.columns
+                index=annual_max.index, columns=self.q_gauges.columns
             )
 
-            # get the date when the max value happen every year
+            # get the date when the max value happens every year
             for i in range(len(self.q_gauges.columns)):
                 sub = self.q_gauges.columns[i]
-                for j in range(len(AnnualMax)):
+                for j in range(len(annual_max)):
                     if j == 0:
-                        f = self.q_gauges.loc[startdate : AnnualMax.index[j], sub]
-                        self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
+                        f = self.q_gauges.loc[start_date : annual_max.index[j], sub]
+                        self.AnnualMaxDates.loc[annual_max.index[j], sub] = f.index[
                             f.argmax()
                         ]
                     else:
                         f = self.q_gauges.loc[
-                            AnnualMax.index[j - 1] : AnnualMax.index[j], sub
+                            annual_max.index[j - 1] : annual_max.index[j], sub
                         ]
-                        self.AnnualMaxDates.loc[AnnualMax.index[j], sub] = f.index[
+                        self.AnnualMaxDates.loc[annual_max.index[j], sub] = f.index[
                             f.argmax()
                         ]
 
             # extract the values at the dates of the previous max value
-            AnnualMax = pd.DataFrame(index=self.AnnualMaxDates.index, columns=columns)
+            annual_max = pd.DataFrame(index=self.AnnualMaxDates.index, columns=columns)
             # Extract time series
             for i in range(len(columns)):
-                Sub = columns[i]
-                QTS = list()
+                sub = columns[i]
+                qts = list()
 
                 if option == 1:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_gauges.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_gauges.loc[start:end, sub].max())
 
                 elif option == 2:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.wl_gauges.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.wl_gauges.loc[start:end, sub].max())
 
                 elif option == 3:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_rrm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_rrm.loc[start:end, sub].max())
 
                 elif option == 4:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.q_hm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.q_hm.loc[start:end, sub].max())
                 else:
-                    for j in range(len(self.AnnualMaxDates.loc[:, Sub])):
+                    for j in range(len(self.AnnualMaxDates.loc[:, sub])):
                         ind = self.AnnualMaxDates.index[j]
-                        date = self.AnnualMaxDates.loc[ind, Sub]
-                        start = date - dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        end = date + dt.timedelta(days=CorespondingTo["TimeWindow"])
-                        QTS.append(self.wl_hm.loc[start:end, Sub].max())
+                        date = self.AnnualMaxDates.loc[ind, sub]
+                        start = date - dt.timedelta(days=corresponding_to["TimeWindow"])
+                        end = date + dt.timedelta(days=corresponding_to["TimeWindow"])
+                        qts.append(self.wl_hm.loc[start:end, sub].max())
 
-                # resample to annual time step
-                AnnualMax.loc[:, Sub] = QTS
+                # resample to an annual time step.
+                annual_max.loc[:, sub] = qts
         else:
-            AnnualMax = pd.DataFrame(columns=columns)
+            annual_max = pd.DataFrame(columns=columns)
             # Extract time series
             for i in range(len(columns)):
-                Sub = columns[i]
+                sub = columns[i]
                 if option == 1:
-                    QTS = self.q_gauges.loc[:, Sub]
+                    qts = self.q_gauges.loc[:, sub]
                 elif option == 2:
-                    QTS = self.wl_gauges.loc[:, Sub]
+                    qts = self.wl_gauges.loc[:, sub]
                 elif option == 3:
-                    QTS = self.q_rrm.loc[:, Sub]
+                    qts = self.q_rrm.loc[:, sub]
                 elif option == 4:
-                    QTS = self.q_hm.loc[:, Sub]
+                    qts = self.q_hm.loc[:, sub]
                 else:
-                    QTS = self.wl_hm.loc[:, Sub]
-                # resample to annual time step
-                AnnualMax.loc[:, Sub] = QTS.resample("A-OCT").max().values
+                    qts = self.wl_hm.loc[:, sub]
+                # resample to an annual time step.
+                annual_max.loc[:, sub] = qts.resample("A-OCT").max().values
 
-            AnnualMax.index = QTS.resample("A-OCT").indices.keys()
+            annual_max.index = qts.resample("A-OCT").indices.keys()
 
         if option == 1:
-            self.annual_max_obs_q = AnnualMax
+            self.annual_max_obs_q = annual_max
         elif option == 2:
-            self.annual_max_obs_wl = AnnualMax
+            self.annual_max_obs_wl = annual_max
         elif option == 3:
-            self.annual_max_rrm = AnnualMax
+            self.annual_max_rrm = annual_max
         elif option == 4:
-            self.annual_max_hm_q = AnnualMax
+            self.annual_max_hm_q = annual_max
         else:
-            self.annual_max_hm_wl = AnnualMax
+            self.annual_max_hm_wl = annual_max
 
     def calculate_profile(
-        self, reachi: int, BedlevelDS: float, Manning: float, BC_slope: float
+        self,
+        reach_id: int,
+        bed_level_downstream: float,
+        manning_coefficient: float,
+        boundary_condition_slope: float,
     ):
         """CalculateProfile.
 
@@ -1118,62 +1111,70 @@ class Calibration(River):
 
         Parameters
         ----------
-        reachi : [Integer]
-            cross-sections reach ID .
-        BedlevelDS : [Float]
-            the bed level of the last cross section in the reach.
-        Manning : [float]
-            manning coefficient.
-        BC_slope : [float]
+        reach_id: [Integer]
+            cross-sections reach ID.
+        bed_level_downstream: [Float]
+            the bed level of the last cross-section in the reach.
+        manning_coefficient: [float]
+            the manning coefficient.
+        boundary_condition_slope: [float]
             slope of the BC.
 
         Returns
         -------
-        crosssection:[dataframe attribute]
-            crosssection attribute will be updated with the newly calculated
-            profile for the given reach
+        cross-section:[dataframe attribute]
+            cross-section attribute will be updated with the newly calculated profile for the given reach
         slope:[dataframe attribute]
-            slope attribute will be updated with the newly calculated average
-            slope for the given reach
+            slope attribute will be updated with the newly calculated average slope for the given reach.
         """
         levels = pd.DataFrame(columns=["id", "bedlevelUS", "bedlevelDS"])
 
         # change cross-section
-        bedlevel = self.cross_sections.loc[
-            self.cross_sections["id"] == reachi, "gl"
+        bed_level = self.cross_sections.loc[
+            self.cross_sections["id"] == reach_id, "gl"
         ].values
-        # get the bedlevel of the last cross section in the reach
+        # get the bed_level of the last cross section in the reach
         # as a calibration parameter
-        levels.loc[reachi, "bedlevelDS"] = BedlevelDS
-        levels.loc[reachi, "bedlevelUS"] = bedlevel[0]
+        levels.loc[reach_id, "bedlevelDS"] = bed_level_downstream
+        levels.loc[reach_id, "bedlevelUS"] = bed_level[0]
 
-        NoDistances = len(bedlevel) - 1
-        # AvgSlope = ((levels.loc[reachi,'bedlevelUS'] -
-        #      levels.loc[reachi,'bedlevelDS'] )/ (500 * NoDistances)) *-500
+        no_distances = len(bed_level) - 1
+        # AvgSlope = ((levels.loc[reach_id,'bedlevelUS'] -
+        #      levels.loc[reach_id,'bedlevelDS'] )/ (500 * no_distances)) *-500
         # change in the bed level of the last XS
-        AverageDelta = (levels.loc[reachi, "bedlevelDS"] - bedlevel[-1]) / NoDistances
+        average_delta = (
+            levels.loc[reach_id, "bedlevelDS"] - bed_level[-1]
+        ) / no_distances
 
         # calculate the new bed levels
-        bedlevelNew = np.zeros(len(bedlevel))
-        bedlevelNew[len(bedlevel) - 1] = levels.loc[reachi, "bedlevelDS"]
-        bedlevelNew[0] = levels.loc[reachi, "bedlevelUS"]
+        bed_level_new = np.zeros(len(bed_level))
+        bed_level_new[len(bed_level) - 1] = levels.loc[reach_id, "bedlevelDS"]
+        bed_level_new[0] = levels.loc[reach_id, "bedlevelUS"]
 
-        for i in range(len(bedlevel) - 1):
-            # bedlevelNew[i] = levels.loc[reachi,'bedlevelDS'] + (len(bedlevel) - i -1) * abs(AvgSlope)
-            bedlevelNew[i] = bedlevel[i] + i * AverageDelta
+        for i in range(len(bed_level) - 1):
+            # bed_level_new[i] = levels.loc[reach_id,'bedlevelDS'] + (len(bed_level) - i -1) * abs(AvgSlope)
+            bed_level_new[i] = bed_level[i] + i * average_delta
 
-        self.cross_sections.loc[self.cross_sections["id"] == reachi, "gl"] = bedlevelNew
+        self.cross_sections.loc[
+            self.cross_sections["id"] == reach_id, "gl"
+        ] = bed_level_new
         # change manning
-        self.cross_sections.loc[self.cross_sections["id"] == reachi, "m"] = Manning
-        ## change slope
+        self.cross_sections.loc[
+            self.cross_sections["id"] == reach_id, "m"
+        ] = manning_coefficient
+        # change slope
         try:
-            # self.slope.loc[self.slope['id']==reachi, 'slope'] = AvgSlope
-            self.slope.loc[self.slope["id"] == reachi, "slope"] = BC_slope
+            # self.slope.loc[self.slope['id']==reach_id, 'slope'] = AvgSlope
+            self.slope.loc[
+                self.slope["id"] == reach_id, "slope"
+            ] = boundary_condition_slope
         except AttributeError:
-            logger.debug(f"The Given river reach- {reachi} does not have a slope")
+            logger.debug(f"The Given river reach- {reach_id} does not have a slope")
 
     def get_reach(self, reach_id: int) -> DataFrame:
-        """Get Reach cross section data.
+        """get_reach.
+
+            cross-section data.
 
         Parameters
         ----------
@@ -1191,7 +1192,9 @@ class Calibration(River):
         )
 
     def update_reach(self, reach: DataFrame):
-        """Update the cross section of a given reach in the cross_sections attributes.
+        """update_reach.
+
+            Update the cross-section of a given reach in the cross_sections attributes.
 
         Parameters
         ----------
@@ -1206,8 +1209,8 @@ class Calibration(River):
         reach_id: np.ndarray = reach.loc[:, "id"].unique()
         if len(reach_id) > 1:
             raise ValueError(
-                f"The given DataFrame conains more than one river reach: {len(reach_id)}, the function "
-                "can update 1 reach at a time."
+                f"The given DataFrame contains more than one river reach: {len(reach_id)}, the function "
+                "can update one reach at a time."
             )
         reach_id = reach_id[0]
         g = self.cross_sections.loc[self.cross_sections["id"] == reach_id, :].index[0]
@@ -1231,20 +1234,20 @@ class Calibration(River):
         -------
         Pandas Series
         """
-        # calculate the average of three XS bed level
+        # calculate the average of three XS bed levels
         # https://pandas.pydata.org/docs/reference/api/pandas.DataFrame.rolling.html
         smoothed = series.rolling(window=window, center=True).mean()
-        # the bed level at the beginning and end of the egment
+        # the bed level at the beginning and end of the segment
         smoothed[0] = series[0]
         smoothed[smoothed.index[-1]] = series[series.index[-1]]
 
         return smoothed
 
     def smooth_bed_level(self, reach_id: int, window: int = 3):
-        """smoothBedLevel.
+        """smooth_bed_level.
 
-            SmoothBedLevel method smoothes the bed level of a given reach ID by
-            calculating the moving average of three cross sections
+            smooth_bed_level method smooths the bed level of a given reach ID by calculating the moving average of
+            three cross sections
 
         Parameters
         ----------
@@ -1259,7 +1262,7 @@ class Calibration(River):
             the "gl" column in the cross_sections attribute will be smoothed
         """
         if not hasattr(self, "cross_sections"):
-            raise ValueError("Please read the cross section first")
+            raise ValueError("Please read the cross-section first")
 
         reach = self.get_reach(reach_id)
         reach["glnew"] = self._smooth(reach["gl"], window=window)
@@ -1273,10 +1276,10 @@ class Calibration(River):
         self.update_reach(reach)
 
     def smooth_dike_level(self, reach_id: int, window: int = 3):
-        """smoothBedLevel.
+        """smooth_dike_level.
 
-            SmoothBedLevel method smoothes the bed level of a given reach ID by
-            calculating the moving average of three cross sections
+            smooth_dike_level method smooths the bed level of a given reach ID by calculating the moving average of
+            three cross sections.
 
         Parameters
         ----------
@@ -1291,7 +1294,7 @@ class Calibration(River):
             the "gl" column in the cross_sections attribute will be smoothed
         """
         if not hasattr(self, "cross_sections"):
-            raise ValueError("Please read the cross section first")
+            raise ValueError("Please read the cross-section first")
 
         reach = self.get_reach(reach_id)
         reach["zl"] = self._smooth(reach["zl"], window=window)
@@ -1299,9 +1302,9 @@ class Calibration(River):
         self.update_reach(reach)
 
     def smooth_bank_level(self, reach_id: int, window: int = 3):
-        """SmoothBankLevel.
+        """smooth_bank_level.
 
-        SmoothBankLevel method smoothes the bankfull depth for a given reach
+        smooth_bank_level method smooths the bankfull depth for a given reach.
 
         Parameters
         ----------
@@ -1330,10 +1333,10 @@ class Calibration(River):
         self.update_reach(reach)
 
     def smooth_floodplain_height(self, reach_id: int, window: int = 3):
-        """SmoothFloodplainHeight.
+        """smooth_floodplain_height.
 
-        SmoothFloodplainHeight method smoothes the Floodplain Height the
-        point 5 and 6 in the cross section for a given reach
+        smooth_floodplain_height method smooths the Floodplain Height the point 5 and 6 in the cross-section for a
+        given reach.
 
         Parameters
         ----------
@@ -1375,10 +1378,9 @@ class Calibration(River):
         )
 
     def smooth_bed_width(self, reach_id: int, window: int = 3):
-        """SmoothBedWidth.
+        """smooth_bed_width.
 
-        SmoothBedWidth method smoothes the Bed Width the in the cross section
-        for a given reach
+            smooth_bed_width method smooths the bed width in the cross-section for a given reach.
 
         Parameters
         ----------
@@ -1397,9 +1399,9 @@ class Calibration(River):
         self.update_reach(reach)
 
     def downward_bed_level(self, reach_id: int, height: Union[int, float]):
-        """downWardBedLevel.
+        """downward_bed_level.
 
-        lowering the bed level by a certain height (5 cm)
+            downward_bed_level lowering the bed level by a certain height (5 cm).
 
         Parameters
         ----------
@@ -1421,40 +1423,33 @@ class Calibration(River):
 
         self.update_reach(reach)
 
-    def smooth_max_slope(self, reach_id: int, SlopePercentThreshold=1.5):
+    def smooth_max_slope(self, reach_id: int, slope_percent_threshold: float = 1.5):
         """SmoothMaxSlope.
 
-        SmoothMaxSlope method smoothes the bed level the in the cross section
+        SmoothMaxSlope method smooths the bed levels in the cross-section.
         for a given reach
 
-        As now the slope is not very smoothed as it was when using the average
-        slope everywhere, when the the difference between two consecutive
-        slopes is very high, the difference is reflected in the calculated
-        discharge from both cross section
+        As now the slope is not very smoothed as it was when using the average slope everywhere, when the difference
+        between two consecutive slopes is very high, the difference is reflected in the calculated discharge from
+        both cross-sections
 
-        Qout is very high
-        Qin is smaller compared to Qout3
-        and from the continuity equation the amount of water that stays at the
-        cross-section is very few water(Qin3-Qout3), less than the minimum
-        depth
+        Qout is very high, Qin is smaller compared to Qout, and from the continuity equation the amount of water that
+        stays at the cross-section is very few water(Qin3-Qout3), less than the minimum depth
 
-        then the minimum depth is assigned at the cross-section, applying the
-        minimum depth in all time steps will make the delta A / delta t equals
-        zero As a result, the integration of delta Q/delta x will give a
-        constant discharge for all the downstream cross-section.
+        then the minimum depth is assigned at the cross-section, applying the minimum depth in all time steps will
+        make the delta A / delta t equal zero As a result, the integration of delta Q/delta x will give a constant
+        discharge for all the downstream cross-section.
 
-        To overcome this limitation, a manual check is performed during the
-        calibration process by visualizing the hydrographs of the first and
-        last cross-section in the sub-basin and the water surface profile to
-        make sure that the algorithm does not give a constant discharge.
+        To overcome this limitation, a manual check is performed during the calibration process by visualizing the
+        hydrographs of the first and last cross-section in the sub-basin and the water surface profile to make sure
+        that the algorithm does not give a constant discharge.
 
         Parameters
         ----------
-        reach_id : [Integer]
+        reach_id: [Integer]
             reach ID.
-        SlopePercentThreshold  : [Float]
-             the percent of change in slope between three successive  cross
-             sections. The default is 1.5.
+        slope_percent_threshold: [Float]
+             the percentage of change in a slope between three successive cross-sections. The default is 1.5.
 
         Returns
         -------
@@ -1467,28 +1462,28 @@ class Calibration(River):
             (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
             for k in range(len(reach) - 1)
         ]
-        # if percent is -ve means second slope is steeper
-        precent = [
+        # if percent is -ve means the second slope is steeper
+        percent = [
             (slopes[k] - slopes[k + 1]) / slopes[k] for k in range(len(slopes) - 1)
         ]
 
-        # at row 1 in precent list is difference between row 1 and row 2
+        # at row 1 in the percent list is the difference between row 1 and row 2
         # in slopes list and slope in row 2 is the steep slope,
         # slope at row 2 is the difference
         # between gl in row 2 and row 3 in the reach dataframe, and gl row
-        # 3 is very and we want to elevate it to reduce the slope
-        for j in range(len(precent)):
-            if precent[j] < 0 and abs(precent[j]) >= SlopePercentThreshold:
+        # 3 is very, and we want to elevate it to reduce the slope
+        for j in range(len(percent)):
+            if percent[j] < 0 and abs(percent[j]) >= slope_percent_threshold:
                 logger.debug(j)
                 # get the calculated slope based on the slope percent threshold
-                slopes[j + 1] = slopes[j] - (-SlopePercentThreshold * slopes[j])
+                slopes[j + 1] = slopes[j] - (-slope_percent_threshold * slopes[j])
                 reach.loc[j + 2, "gl"] = reach.loc[j + 1, "gl"] - slopes[j + 1] * 500
                 # recalculate all the slopes again
                 slopes = [
                     (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
                     for k in range(len(reach) - 1)
                 ]
-                precent = [
+                percent = [
                     (slopes[k] - slopes[k + 1]) / slopes[k]
                     for k in range(len(slopes) - 1)
                 ]
@@ -1496,40 +1491,37 @@ class Calibration(River):
         self.update_reach(reach)
 
     def check_floodplain(self):
-        """CheckFloodplain.
+        """check_floodplain.
 
-        CheckFloodplain method check if the dike levels is higher than the
-        floodplain height (point 5 and 6 has to be lower than point 7 and 8
-                           in the cross sections)
+            check_floodplain method checks if the dike levels are higher than the floodplain height (point 5 and 6
+            has to be lower than point 7 and 8 in the cross-sections)
 
         Returns
         -------
-        crosssection : [dataframe attribute]
-            the "zl" and "zr" column in the "cross_sections" attribute will be
-            updated
+        cross-section: [dataframe attribute]
+            the "zl" and "zr" column in the "cross_sections" attribute will be updated.
         """
-        msg = """please read the cross section first or copy it to the
-        Calibration object"""
+        msg = """please read the cross-section first or copy it to the Calibration object"""
         assert hasattr(self, "cross_sections"), "{0}".format(msg)
         for i in range(len(self.cross_sections)):
-            BankLevel = (
+            bank_level = (
                 self.cross_sections.loc[i, "gl"] + self.cross_sections.loc[i, "dbf"]
             )
 
             if (
-                BankLevel + self.cross_sections.loc[i, "hl"]
+                bank_level + self.cross_sections.loc[i, "hl"]
                 > self.cross_sections.loc[i, "zl"]
             ):
                 self.cross_sections.loc[i, "zl"] = (
-                    BankLevel + self.cross_sections.loc[i, "hl"] + 0.5
+                    bank_level + self.cross_sections.loc[i, "hl"] + 0.5
                 )
 
             if (
-                BankLevel + self.cross_sections.loc[i, "hr"]
+                bank_level + self.cross_sections.loc[i, "hr"]
                 > self.cross_sections.loc[i, "zr"]
             ):
                 self.cross_sections.loc[i, "zr"] = (
-                    BankLevel + self.cross_sections.loc[i, "hr"] + 0.5
+                    bank_level + self.cross_sections.loc[i, "hr"] + 0.5
                 )
 
     @staticmethod
@@ -1537,7 +1529,7 @@ class Calibration(River):
         df1: DataFrame,
         df2: DataFrame,
         gauges: list,
-        novalue: int,
+        no_data_value: int,
         start: str = "",
         end: str = "",
         shift: int = 0,
@@ -1553,7 +1545,7 @@ class Calibration(River):
             second dataframe, with columns as the gauges id and rows as the time series
         gauges: [list]
             list of gauges ids
-        novalue:
+        no_data_value:
             the value used to fill the missing values
         start:
             start date
@@ -1569,7 +1561,7 @@ class Calibration(River):
         GeoDataFrame:
             with the following columns ["start", "end", "rmse", "KGE", "WB", "NSE", "NSEModified"]
         """
-        Metrics = gpd.GeoDataFrame(
+        metrics = gpd.GeoDataFrame(
             index=gauges,
             columns=["start", "end", "rmse", "KGE", "WB", "NSE", "NSEModified"],
         )
@@ -1577,51 +1569,51 @@ class Calibration(River):
         for i in range(len(gauges)):
             # get the index of the first value in the column that is not -9 or Nan
             st1 = df1.loc[:, df1.columns[i]][
-                df1.loc[:, df1.columns[i]] != novalue
+                df1.loc[:, df1.columns[i]] != no_data_value
             ].index[0]
             st2 = df2.loc[:, df2.columns[i]][
-                df2.loc[:, df2.columns[i]] != novalue
+                df2.loc[:, df2.columns[i]] != no_data_value
             ].index[0]
 
-            Metrics.loc[gauges[i], "start"] = max(st1, st2)
-            end1 = df1[df1.columns[i]][df1[df1.columns[i]] != novalue].index[-1]
-            end2 = df2[df2.columns[i]][df2[df2.columns[i]] != novalue].index[-1]
-            Metrics.loc[gauges[i], "end"] = min(end1, end2)
+            metrics.loc[gauges[i], "start"] = max(st1, st2)
+            end1 = df1[df1.columns[i]][df1[df1.columns[i]] != no_data_value].index[-1]
+            end2 = df2[df2.columns[i]][df2[df2.columns[i]] != no_data_value].index[-1]
+            metrics.loc[gauges[i], "end"] = min(end1, end2)
 
         # manually adjust and start or end date to calculate the performance between
         # two dates
         if start != "":
-            Metrics.loc[:, "start"] = dt.datetime.strptime(start, fmt)
+            metrics.loc[:, "start"] = dt.datetime.strptime(start, fmt)
         if end != "":
-            Metrics.loc[:, "end"] = dt.datetime.strptime(end, fmt)
+            metrics.loc[:, "end"] = dt.datetime.strptime(end, fmt)
 
         # calculate th metrics
         for i in range(len(gauges)):
-            start_date = Metrics.loc[gauges[i], "start"]
-            end_date = Metrics.loc[gauges[i], "end"]
+            start_date = metrics.loc[gauges[i], "start"]
+            end_date = metrics.loc[gauges[i], "end"]
             obs = df1.loc[start_date:end_date, gauges[i]].values.tolist()
             sim = df2.loc[start_date:end_date, gauges[i]].values.tolist()
 
             # shift hm result
             sim[shift:-shift] = sim[0 : -shift * 2]
 
-            Metrics.loc[gauges[i], "rmse"] = round(pf.rmse(obs, sim), 0)
-            Metrics.loc[gauges[i], "KGE"] = round(pf.kge(obs, sim), 3)
-            Metrics.loc[gauges[i], "NSE"] = round(pf.nse(obs, sim), 3)
-            Metrics.loc[gauges[i], "NSEModified"] = round(pf.nse_hf(obs, sim), 3)
-            Metrics.loc[gauges[i], "WB"] = round(pf.wb(obs, sim), 0)
-            Metrics.loc[gauges[i], "MBE"] = round(pf.mbe(obs, sim), 3)
-            Metrics.loc[gauges[i], "MAE"] = round(pf.mae(obs, sim), 3)
+            metrics.loc[gauges[i], "rmse"] = round(pf.rmse(obs, sim), 0)
+            metrics.loc[gauges[i], "KGE"] = round(pf.kge(obs, sim), 3)
+            metrics.loc[gauges[i], "NSE"] = round(pf.nse(obs, sim), 3)
+            metrics.loc[gauges[i], "NSEModified"] = round(pf.nse_hf(obs, sim), 3)
+            metrics.loc[gauges[i], "WB"] = round(pf.wb(obs, sim), 0)
+            metrics.loc[gauges[i], "MBE"] = round(pf.mbe(obs, sim), 3)
+            metrics.loc[gauges[i], "MAE"] = round(pf.mae(obs, sim), 3)
 
-        return Metrics
+        return metrics
 
     def hm_vs_rrm(
         self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
-        """HMvsRRM.
+        """hm_vs_rrm.
 
-            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
-            discharge and the rainfall-runoff model simulated discharge
+            hm_vs_rrm calculates the performance metrics between the hydraulic model simulated discharge and the
+            rainfall-runoff model simulated discharge.
 
         Parameters
         ----------
@@ -1632,9 +1624,8 @@ class Calibration(River):
         fmt: [str]
             format of the given date
         shift: [int]
-            if there is a shift in the clculated timeseries by one or more time
-            steps and you want to fix this problem in calculating the metrics by
-            shifting the calculated timeseries by one or more time steps.
+            if there is a shift in the calculated timeseries, by one or more time steps, and you want to fix this
+            problem in calculating the metrics by shifting the calculated timeseries by one or more time steps.
 
         Returns
         -------
@@ -1646,21 +1637,26 @@ class Calibration(River):
             self.hm_gauges, GeoDataFrame
         ):
             raise ValueError(
-                "rrm_gauges variable does not exist please read the RRM results "
-                "with 'ReadRRM' method"
+                "rrm_gauges variable does not exist please read the RRM results with 'ReadRRM' method"
             )
         if not isinstance(self.rrm_gauges, list):
             raise ValueError(
-                "rrm_gauges variable does not exist please read the RRM results "
-                "with 'ReadRRM' method"
+                "rrm_gauges variable does not exist please read the RRM results with 'ReadRRM' method"
             )
         if not isinstance(self.q_rrm, DataFrame):
             raise ValueError("please read the RRM results with the 'ReadRRM' method")
         if not isinstance(self.q_hm, DataFrame):
             raise ValueError("please read the HM results with the 'ReadHMQ' method")
-        ### HM vs RRM
+        # HM vs RRM
         self.metrics_hm_vs_rrm = self.metrics(
-            self.q_rrm, self.q_hm, self.rrm_gauges, self.novalue, start, end, shift, fmt
+            self.q_rrm,
+            self.q_hm,
+            self.rrm_gauges,
+            self.no_data_value,
+            start,
+            end,
+            shift,
+            fmt,
         )
         # get the point geometry from the hm_gauges
         self.metrics_hm_vs_rrm = self.hm_gauges.merge(
@@ -1678,10 +1674,10 @@ class Calibration(River):
     def rrm_vs_observed(
         self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
-        """RRM_vs_observed.
+        """rrm_vs_observed.
 
-            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
-            discharge and the rainfall-runoff model simulated discharge
+            rrm_vs_observed calculates the performance metrics between the hydraulic model simulated discharge and
+            the rainfall-runoff model simulated discharge.
 
         Parameters
         ----------
@@ -1692,9 +1688,8 @@ class Calibration(River):
         fmt: [str]
             format of the given date
         shift: [int]
-            if there is a shift in the clculated timeseries by one or more time
-            steps and you want to fix this problem in calculating the metrics by
-            shifting the calculated timeseries by one or more time steps.
+            if there is a shift in the calculated timeseries by one or more time steps, and you want to fix this
+            problem in calculating the metrics by shifting the calculated timeseries by one or more time steps.
 
         Returns
         -------
@@ -1704,16 +1699,14 @@ class Calibration(River):
         """
         if not isinstance(self.rrm_gauges, list):
             raise ValueError(
-                "rrm_gauges variable does not exist please read the RRM results "
-                "with 'ReadRRM' method"
+                "rrm_gauges variable does not exist please read the RRM results with 'ReadRRM' method"
             )
         if not isinstance(self.q_rrm, DataFrame):
             raise ValueError("please read the RRM results with the 'ReadRRM' method")
 
         if not isinstance(self.q_gauges, DataFrame):
             raise ValueError(
-                "q_gauges variable does not exist please read the gauges data "
-                "with 'ReadObservedQ' method"
+                "q_gauges variable does not exist please read the gauges data with 'ReadObservedQ' method"
             )
 
         # RRM vs observed
@@ -1721,7 +1714,7 @@ class Calibration(River):
             self.q_gauges,
             self.q_rrm,
             self.rrm_gauges,
-            self.novalue,
+            self.no_data_value,
             start,
             end,
             shift,
@@ -1750,8 +1743,8 @@ class Calibration(River):
     ):
         """HMQvsObserved.
 
-            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
-            discharge and the rainfall-runoff model simulated discharge
+            hm_vs_observed_discharge calculates the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge.
 
         Parameters
         ----------
@@ -1762,9 +1755,8 @@ class Calibration(River):
         fmt: [str]
             format of the given date
         shift: [int]
-            if there is a shift in the clculated timeseries by one or more time
-            steps and you want to fix this problem in calculating the metrics by
-            shifting the calculated timeseries by one or more time steps.
+            if there is a shift in the calculated timeseries by one or more time steps, and you want to fix this
+            problem in calculating the metrics by shifting the calculated timeseries by one or more time steps.
 
         Returns
         -------
@@ -1774,22 +1766,20 @@ class Calibration(River):
         """
         if not isinstance(self.q_gauges, DataFrame):
             raise ValueError(
-                "q_gauges variable does not exist please read the gauges data "
-                "with 'ReadObservedQ' method"
+                "q_gauges variable does not exist please read the gauges' data with 'ReadObservedQ' method"
             )
 
         if not isinstance(self.q_hm, DataFrame):
             raise ValueError(
-                "q_hm variable does not exist please read the HM results "
-                "with 'ReadHMQ' method"
+                "q_hm variable does not exist please read the HM results with 'ReadHMQ' method"
             )
 
-        ### HM Q vs observed
+        # HM Q vs observed
         self.metrics_hm_q_vs_obs = self.metrics(
             self.q_gauges,
             self.q_hm,
-            self.QgaugesList,
-            self.novalue,
+            self.discharge_gauges_list,
+            self.no_data_value,
             start,
             end,
             shift,
@@ -1816,10 +1806,10 @@ class Calibration(River):
         fmt: str = "%Y-%m-%d",
         shift: int = 0,
     ):
-        """HMWLvsObserved.
+        """hm_vs_observed_water_level.
 
-            HM_vs_RRM calculate the performance metrics between the hydraulic model simulated
-            discharge and the rainfall-runoff model simulated discharge
+            hm_vs_observed_water_level calculates the performance metrics between the hydraulic model simulated
+            discharge and the rainfall-runoff model simulated discharge.
 
         Parameters
         ----------
@@ -1830,9 +1820,8 @@ class Calibration(River):
         fmt: [str]
             format of the given date
         shift: [int]
-            if there is a shift in the clculated timeseries by one or more time
-            steps and you want to fix this problem in calculating the metrics by
-            shifting the calculated timeseries by one or more time steps.
+            if there is a shift in the calculated timeseries by one or more time steps, and you want to fix this
+            problem in calculating the metrics by shifting the calculated timeseries by one or more time steps.
 
         Returns
         -------
@@ -1842,22 +1831,20 @@ class Calibration(River):
         """
         if not isinstance(self.wl_gauges, DataFrame):
             raise ValueError(
-                "wl_gauges variable does not exist please read the water level gauges "
-                "with 'readObservedWL' method"
+                "wl_gauges variable does not exist please read the water level gauges with 'readObservedWL' method"
             )
 
         if not isinstance(self.wl_hm, DataFrame):
             raise ValueError(
-                "wl_hm variable does not exist please read the water level simulated by the HM "
-                "with 'readHMWL' method"
+                "wl_hm variable does not exist please read the water level simulated by the HM with 'readHMWL' method"
             )
 
-        ### HM WL vs observed
+        # HM WL vs observed
         self.metrics_hm_wl_vs_obs = self.metrics(
             self.wl_gauges,
             self.wl_hm,
             self.wl_gauges_list,
-            self.novalue,
+            self.no_data_value,
             start,
             end,
             shift,
@@ -1877,33 +1864,32 @@ class Calibration(River):
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.metrics_hm_wl_vs_obs.crs = self.hm_gauges.crs
 
-    def Inspect_gauge(
+    def inspect_gauge(
         self,
         reach_id: int,
-        gaugei: int = 0,
+        gauge_id: int = 0,
         start: str = "",
         end: str = "",
         fmt: str = "%Y-%m-%d",
     ) -> Union[
         tuple[DataFrame, Figure, tuple[Any, Any]], tuple[DataFrame, Figure, Any]
     ]:
-        """InspectGauge.
+        """inspect_gauge.
 
-            InspectGauge returns the metrices of the gauge simulated discharge and water level
-            and plot it
+            inspect_gauge returns the metrices of the simulated discharge and water level and plots it.
 
         Parameters
         ----------
         reach_id: [int]
             river reach id
-        gaugei: [int]
-            if the river reach has more than one gauge, gaugei is the gauge order
+        gauge_id: [int]
+            if the river reach has more than one gauge, gauge_id is the gauge order.
         start: [str]
-            start date, if not given it will be taken from the already calculated Metrics table
+            start date, if not given, it will be taken from the already calculated Metrics table.
         end: [str]
-            end date, if not given it will be taken from the already calculated Metrics table
+            end date, if not given, it will be taken from the already calculated Metrics table.
         fmt : [str]
-            format of the given dates. The default is "%Y-%m-%d"
+            format of the given dates. The default is "%Y-%m-%d".
 
         Returns
         -------
@@ -1917,9 +1903,9 @@ class Calibration(River):
                 "please calculate first the metrics_hm_vs_rrm by the method HMvsRRM"
             )
 
-        gauge = self.get_gauges(reach_id, gaugei)
+        gauge = self.get_gauges(reach_id, gauge_id)
         gauge_id = gauge.loc[0, self.gauge_id_col]
-        gaugename = str(gauge.loc[0, "name"])
+        gauge_name = str(gauge.loc[0, "name"])
 
         summary = pd.DataFrame(
             index=["HM-RRM", "RRM-Observed", "HM-Q-Observed", "HM-WL-Observed"],
@@ -2003,8 +1989,8 @@ class Calibration(River):
             # ObsMax = max(self.wl_gauges[gauge_id].loc[start_2: end_2])
             # pos = max(SimMax, ObsMax)
         # plt.legend(font_size=15)
-        ax1.set_title(gaugename, fontsize=30)
-        ax1.set_title(gaugename, fontsize=30)
+        ax1.set_title(gauge_name, fontsize=30)
+        ax1.set_title(gauge_name, fontsize=30)
 
         if gauge.loc[0, "waterlevel"] == 1:
             return summary, fig, (ax1, ax2)
@@ -2013,9 +1999,9 @@ class Calibration(River):
 
     @staticmethod
     def prepare_to_save(df: DataFrame) -> DataFrame:
-        """PrepareToSave.
+        """prepare_to_save.
 
-            PrepareToSave convert all the dates in the dataframe into string
+            prepare_to_save convert all the dates in the dataframe into string.
 
         Parameters
         ----------
@@ -2053,10 +2039,10 @@ class Calibration(River):
                     )
         return df
 
-    def save_metices(self, path):
-        """SaveMetices.
+    def save_metrices(self, path):
+        """save_metrices.
 
-            SaveMetices saves the calculated metrics
+            save_metrices saves the calculated metrics.
 
         Parameters
         ----------

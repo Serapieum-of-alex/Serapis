@@ -138,7 +138,7 @@ try:
 except:
     # read results of at the gauge
     CalibPath = "F:/RFM/mHM2RIM_testcase/RIM/results/calibration/"
-    Calib.read_caliration_result(segment_xs, CalibPath)
+    Calib.read_calibration_result(segment_xs, CalibPath)
     print("calibration result of the XS is read")
 
 # read US boundary  hydrographs

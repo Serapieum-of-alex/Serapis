@@ -67,7 +67,7 @@ gaugei = 0
 # start ="1990-01-01"
 start = ""
 end = ""  # "1994-3-1"
-summary, fig, ax = Calib.Inspect_gauge(subid, gaugei=gaugei, start=start, end=end)
+summary, fig, ax = Calib.inspect_gauge(subid, gauge_id=gaugei, start=start, end=end)
 print(summary)
 # %% special plot for the poster
 subid = 1
