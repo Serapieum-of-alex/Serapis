@@ -420,8 +420,7 @@ class Event:
             this method creates an instance attribute of type dataframe with columns ['id','continue', 'ind_diff',
             'duration']
         """
-        # read the index file (containing the id of the days where flood happens (2D
-        # algorithm works))
+        # read the index file (containing the id of the days, where flood happens (2D algorithm works))
         if not os.path.exists(path):
             raise FileNotFoundError(f"The file you have entered does not exist: {path}")
         start = dt.datetime.strptime(start, fmt)
@@ -432,8 +431,7 @@ class Event:
         event_index.rename(columns={0: "id"}, inplace=True)
         # convert the index into date
         event_index = Event.ordinal_to_date(event_index, reference_index)
-        # index difference maybe different than the duration as there might be
-        # a gap in the middle of the event
+        # index difference maybe different from the duration as there might be a gap in the middle of the event.
         cols = ["continue", "ind_diff", "duration", "index"]
         event_index.loc[:, cols] = 0
 
@@ -455,7 +453,7 @@ class Event:
                 event_index.loc[i, "duration"] = (
                     event_index.loc[i, "date"] - event_beginning
                 ).days + 1
-            else:  # if not then the day is the start of another event
+            else:  # if not, then the day is the start of another event
                 k = k + 1
                 event_beginning = event_index.loc[i, "date"]
 
@@ -464,32 +462,34 @@ class Event:
         return cls(name, start=start, event_index=event_index)
 
     def get_all_events(self):
-        """GetAllEvents. GetAllEvents methods returns the end day of all events.
+        """get_all_events.
+
+            get_all_events method returns the end day of all events.
 
         Returns
         -------
             None.
         """
         assert hasattr(self, "event_index"), "please read/Create the event_index"
-        IDs = list()
+        ids = list()
         for i in range(len(self.event_index)):
             if self.event_index.loc[i, "continue"] == 0 and i != 0:
-                IDs.append(self.event_index.loc[i - 1, "id"])
+                ids.append(self.event_index.loc[i - 1, "id"])
 
-        self.end_days = IDs
+        self.end_days = ids
 
     def create_from_overtopping(self, path: str, delimiter: str = r"\s+"):
-        r"""Overtopping.
+        r"""create_from_overtopping.
 
-            - Overtopping method reads the overtopping file and check if the event_index
-            dataframe has already need created by the CreateEventIndex method, it will add
-            the overtopping to it, if not it will create the event_index dataframe.
+            - Overtopping method reads the overtopping file and checks if the event_index dataframe has already been
+            created by the CreateEventIndex method, it will add the overtopping to it, if not, it will create the
+            event_index dataframe.
 
         Parameters
         ----------
         path: [str]
-            path including the file name and extention of the Overtopping
-            file result from the 1D model, the file has the follwoing headers.
+            path including the file name and extention of the Overtopping file result from the 1D model, the file has
+            the following headers.
             >>>  Step	overtopping(m3/s)
             >>>  14342            850.8
             >>>  14373            893.4
@@ -543,10 +543,10 @@ class Event:
                     self._event_index.loc[i, "duration"] = (
                         self._event_index.loc[i, "date"] - self.event_beginning
                     ).days + 1
-                else:  # if not then the day is the start of another event
+                else:  # if not, then the day is the start of another event
                     self.event_beginning = self._event_index.loc[i, "date"]
 
-        # store the overtoppiung data in the _event_index dataframe
+        # store the overtopping data in the _event_index dataframe
         self._event_index["Overtopping"] = overtop_total["overtopping(m3/s)"]
 
         self._event_index.loc[0, "OvertoppingCum"] = self._event_index.loc[
@@ -562,47 +562,49 @@ class Event:
                     self._event_index.loc[i, "Overtopping"]
                     + self._event_index.loc[i - 1, "OvertoppingCum"]
                 )
-        # the volume of water is m3/s for hourly stored and acumulated values
+        # the volume of water is m3/s for hourly stored and accumulated values
         # volume = overtopping * 60 *60 = m3
         self._event_index.loc[:, "Volume"] = (
             self._event_index.loc[:, "OvertoppingCum"] * 60 * 60
         )
 
     def calculate_volume_error(self, path):
-        """VolumeError. VolumeError method reads the VoleError file, assign values to the the coresponding time step.
+        """calculate_volume_error.
+
+            calculate_volume_error method reads the VoleError file, assign values to the coresponding time step.
 
         Parameters
         ----------
         path : [str]
-            a path to the folder includng the maps.
+            a path to the folder including the maps.
 
         Returns
         -------
         event_index: [dataframe].
             add columns ['DEMError','StepError','TooMuchWater'] to the event_index dataframe
         """
-        # read the VolError file
-        VolError = pd.read_csv(path, delimiter=r"\s+")
+        # read the vol_error file
+        vol_error = pd.read_csv(path, delimiter=r"\s+")
         self._event_index["DEMError"] = 0
         self._event_index["StepError"] = 0
         self._event_index["TooMuchWater"] = 0
 
-        for i in range(len(VolError)):
-            loc = np.where(VolError.loc[i, "step"] == self._event_index.loc[:, "id"])[
+        for i in range(len(vol_error)):
+            loc = np.where(vol_error.loc[i, "step"] == self._event_index.loc[:, "id"])[
                 0
             ][0]
             self._event_index.loc[
                 loc, ["DEMError", "StepError", "TooMuchWater"]
-            ] = VolError.loc[
+            ] = vol_error.loc[
                 i, ["DEM_Error", "PreviousDepthError", "TOOMuchWaterError"]
             ].tolist()
 
-        self._event_index["VolError"] = (
+        self._event_index["vol_error"] = (
             self._event_index["StepError"]
             + self._event_index["DEMError"]
             + self._event_index["TooMuchWater"]
         )
-        self._event_index["VolError2"] = self._event_index["VolError"] / 20
+        self._event_index["VolError2"] = self._event_index["vol_error"] / 20
 
     def overlay_maps(
         self,
@@ -610,29 +612,29 @@ class Event:
         base_map: str,
         excluded_value,
     ) -> Catalog:
-        """Overlay_maps.
+        """overlay_maps.
 
-            - OverlayMaps method reads all the maps in the folder given by path input and overlay them with the
-            basemap and for each value in the basemap it create a dictionary with the intersected values from all maps.
+            - OverlayMaps method reads all the maps in the folder given by path input and overlays them with the
+             basemap, and for each value in the basemap it creates a dictionary with the intersected values from all
+             maps.
 
         Parameters
         ----------
         path: [String]
-            a path to the folder includng the maps.
+            a path to the folder including the maps.
         base_map: [String]
-            a path includng the name of the ASCII and extention like
-            path="data/cropped.asc"
+            a path including the name of the ASCII and extension like path="data/cropped.asc"
         excluded_value: [Numeric]
-            values you want to exclude from exteacted values
+            values you want to exclude from extracted values.
 
         Returns
         -------
         extracted_values: [Dict]
-            dictonary with a list of values in the basemap as keys and for each key a list of all the intersected
-            values in the maps from the path
+            dictionary with a list of values in the basemap as keys and for each key a list of all the intersected
+            values in the maps from the path.
         """
         classes_map = Dataset.read_file(base_map)
-        # get the numbe of inundated cells in the Event index data frame
+        # get the number of inundated cells in the Event index data frame.
         ind_unique = self.event_index.loc[:, "index"].unique()
         ind = self.event_index.loc[:, "index"].values
         event_catalog = {}
@@ -665,8 +667,8 @@ class Event:
     def read_event_index(cls, name: str, path: str, start: str):
         """read_event_index.
 
-            ReadEventIndex method reads the event_index table created using the "CreateEventIndex" or
-            "Overtopping" methods.
+            ReadEventIndex method reads the event_index table created using the "CreateEventIndex" or "Overtopping"
+            methods.
 
         Parameters
         ----------
@@ -679,7 +681,7 @@ class Event:
 
         Returns
         -------
-        event_index : [dataframe].
+        event_index: [dataframe].
             dataframe of the event_index table
         """
         event_index = pd.read_csv(path)
@@ -687,7 +689,7 @@ class Event:
 
     def histogram(
         self,
-        Day: int,
+        day: int,
         exclude_value: Any = 0,
         map_type: int = 1,
         upper_bound=None,
@@ -696,16 +698,16 @@ class Event:
     ):
         """histogram.
 
-            - Histogram method extract values fro the event MaxDepth map and plot the histogram th emethod check
+            - Histogram method extract values for the event MaxDepth map and plot the histogram the method checks
             first if you already extracted the values before then plot the histogram.
 
         Parameters
         ----------
-        Day : [Integer]
+        day: [Integer]
             DESCRIPTION.
-        exclude_value : [Integer]
+        exclude_value: [Integer]
             DESCRIPTION.
-        map_type : [integer], optional
+        map_type: [integer], optional
             1 for the max depth maps, 2 for the duration map, 3 for the
             return period maps. The default is 1.
         upper_bound: [float, int]
@@ -714,24 +716,24 @@ class Event:
             Default is 15
         """
         if hasattr(self, "extracted_values"):
-            # get the list of event that then object has their Extractedvalues
-            if Day not in list(self.extracted_values.keys()):
+            # get the list of event then extract their values.
+            if day not in list(self.extracted_values.keys()):
                 # depth map
                 if map_type == 1:
-                    path = f"{self.two_d_result_path}/{self.depth_prefix}{Day}.tif"
+                    path = f"{self.two_d_result_path}/{self.depth_prefix}{day}.tif"
                 elif map_type == 2:
-                    path = f"{self.two_d_result_path}/{self.duration_prefix}{Day}.tif"
+                    path = f"{self.two_d_result_path}/{self.duration_prefix}{day}.tif"
                 else:
                     path = (
-                        f"{self.two_d_result_path}/{self.return_period_prefix}{Day}.tif"
+                        f"{self.two_d_result_path}/{self.return_period_prefix}{day}.tif"
                     )
 
                 dataset = Dataset.read_file(path)
                 extracted_values = dataset.extract(exclude_value=exclude_value)
                 # non_zero_cells = len(extracted_values)
-                self.extracted_values[Day] = extracted_values
+                self.extracted_values[day] = extracted_values
 
-        extracted_values = self.extracted_values[Day]
+        extracted_values = self.extracted_values[day]
         # filter values
         if lower_bound is not None:
             extracted_values = [j for j in extracted_values if j > lower_bound]
@@ -749,23 +751,25 @@ class Event:
         )
         return fig, ax, opts
 
-    def drop(self, DropList):
-        """Drop Drop method deletes columns from the event_index dataframe.
+    def drop(self, drop_list):
+        """drop.
+
+            drop method deletes columns from the event_index dataframe.
 
         Parameters
         ----------
-        DropList: [list]
+        drop_list: [list]
             list of column names to delete from the event_index dataframe table
 
         Returns
         -------
-        event_index: [datadrame]
-            the event_index dataframe without the columns in the Droplist
+        event_index: [dataframe]
+            the event_index dataframe without the columns in the drop_list
         """
         dataframe = self._event_index.loc[:, :]
         columns = list(dataframe.columns)
 
-        [columns.remove(i) for i in DropList]
+        [columns.remove(i) for i in drop_list]
 
         dataframe = dataframe.loc[:, columns]
         self._event_index = dataframe
@@ -783,9 +787,9 @@ class Event:
         self._event_index.to_csv(path, header=True, index=None)
 
     def get_event_start(self, loc: int) -> Tuple[int, int]:
-        """GetEventBeginning.
+        """get_event_start.
 
-            - event_beginning method returns the index of the beginning of the event in the event_index dataframe.
+            - get_event_start method returns the index of the beginning of the event in the event_index dataframe.
 
         Parameters
         ----------
@@ -837,7 +841,7 @@ class Event:
 
         # filter the dataframe and get only the 'indDiff' and 'id' columns
         filtered_event = self.event_index.loc[:, ["continue", "id"]]
-        # get only days before the day you inputed
+        # get only days before the day you entered
         for i in range(loc + 1, len(filtered_event)):
             # start search from the following day
             if filtered_event.loc[i, "continue"] != 1:
@@ -849,9 +853,9 @@ class Event:
         return ind, day
 
     def prepare_for_plotting(self, column_name: str):
-        """Prepare For Plotting.
+        """prepare_for_plotting.
 
-            - PrepareForPlotting takes a time series in the event_index dataframe and fill the days that does not
+            - PrepareForPlotting takes a time series in the event_index dataframe and fill the days that do not
             exist in date column and fill it with zero to properly plot it without letting the graph mislead the
             viewer of connecting the data over the gap period.
 
@@ -873,18 +877,3 @@ class Event:
             df.loc[loc, column_name] = self.event_index.loc[i, column_name]
 
         return df
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-
-        print("\n")
-        print(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
-
-        print("\n")
