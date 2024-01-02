@@ -215,7 +215,7 @@ class SaintVenant:
         Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
         Model.h = np.zeros(shape=(nt, len(Model.cross_sections)))
         # calculate area and perimeter of all xssbased on the
-        xs = np.zeros(shape=(Model.xsno, 2))
+        xs = np.zeros(shape=(Model.xs_number, 2))
         Model.h[0, :] = 0.1
         Model.q[0, :] = Model.InihQ
         Model.q[: len(Model.qusbc), 0] = usbc.loc[:, "Q"]
@@ -231,8 +231,8 @@ class SaintVenant:
                 # perimeter
                 xs[x, 2] = Model.cross_sections.loc[x, "b"]
 
-            for x in range(1, len(Model.xsno)):
-                if x < Model.xsno - 1:
+            for x in range(1, len(Model.xs_number)):
+                if x < Model.xs_number - 1:
                     # friction slope = (so - dhx/dx] - diffusive wave
                     sf = (
                         Model.h[t, x]
@@ -249,7 +249,7 @@ class SaintVenant:
                         - Model.cross_sections.loc[x, "bed level"]
                     ) / Model.dx
 
-                if x < Model.xsno - 1:
+                if x < Model.xs_number - 1:
                     Area = (xs[x, 1] + xs[x + 1, 2]) / 2
                     R = (xs[x, 1] / xs[x, 2] + xs[x + 1, 1] / xs[x + 1, 2]) / 2
 
@@ -302,29 +302,29 @@ class SaintVenant:
         MinQ
         """
 
-        xs = np.zeros(shape=(Sub.xsno, 8))
-        Diff_coeff = np.zeros(shape=(Sub.xsno, 3))
-        XSarea = np.zeros(shape=(Sub.xsno))
+        xs = np.zeros(shape=(Sub.xs_number, 8))
+        Diff_coeff = np.zeros(shape=(Sub.xs_number, 3))
+        XSarea = np.zeros(shape=(Sub.xs_number))
 
-        wl = np.zeros(shape=(Sub.xsno))
-        hx = np.zeros(shape=(Sub.xsno))
-        qx = np.zeros(shape=(Sub.xsno))
+        wl = np.zeros(shape=(Sub.xs_number))
+        hx = np.zeros(shape=(Sub.xs_number))
+        qx = np.zeros(shape=(Sub.xs_number))
 
-        h = np.zeros(shape=(Sub.xsno, River.TS))
-        q = np.zeros(shape=(Sub.xsno, River.TS))
+        h = np.zeros(shape=(Sub.xs_number, River.TS))
+        q = np.zeros(shape=(Sub.xs_number, River.TS))
 
-        storewl = np.zeros(shape=(River.xsno, 2))
+        storewl = np.zeros(shape=(River.xs_number, 2))
         # OverTopFlow = np.zeros(shape=(River.xsno*2,24))
         # OverTopWL = np.zeros(shape=(River.xsno*2,24))
         Lateral_q = MinQ.values[:-1, :-2]
 
-        q_outL = np.zeros(shape=(Sub.xsno, River.TS))
-        q_outR = np.zeros(shape=(Sub.xsno, River.TS))
-        q_out = np.zeros(shape=(Sub.xsno, River.TS))
+        q_outL = np.zeros(shape=(Sub.xs_number, River.TS))
+        q_outR = np.zeros(shape=(Sub.xs_number, River.TS))
+        q_out = np.zeros(shape=(Sub.xs_number, River.TS))
 
-        q_outLx = np.zeros(shape=(Sub.xsno))
-        q_outRx = np.zeros(shape=(Sub.xsno))
-        q_outx = np.zeros(shape=(Sub.xsno))
+        q_outLx = np.zeros(shape=(Sub.xs_number))
+        q_outRx = np.zeros(shape=(Sub.xs_number))
+        q_outx = np.zeros(shape=(Sub.xs_number))
 
         for t in range(0, River.TS):
             dtrest = dt
@@ -350,7 +350,7 @@ class SaintVenant:
                 adaptiveTS_counter = adaptiveTS_counter + 1
                 # calculate the area and perimeter based on the water depth of the previous time step
                 # for the whole cross sections in the sub-basin
-                for x in range(0, Sub.xsno):
+                for x in range(0, Sub.xs_number):
                     # xs[:,:] = 0
                     # calculate the area & perimeter of the whole XS
                     Coords = River.get_vortices(
@@ -389,21 +389,21 @@ class SaintVenant:
                         )
 
                 # for each cross section -------------------------------
-                for x in range(0, Sub.xsno):
+                for x in range(0, Sub.xs_number):
                     # print(*,'(a3,i4,a4,i6,a]'] 't= ',t,' x= ', xsid[x],'------------------'
                     # forward difference
                     # surface slope is calculated based on the previous time step water depth
                     # except for the first cross section hx[1]is from current time step
                     # while hx[2]is from previous time step
-                    if x < Sub.xsno - 1:
+                    if x < Sub.xs_number - 1:
                         # friction slope = (so - dhx/dx] - diffusive wave
                         sf = (
-                            hx[x] + Sub.bedlevel[x] - hx[x + 1] - Sub.bedlevel[x + 1]
+                            hx[x] + Sub.bed_level[x] - hx[x + 1] - Sub.bed_level[x + 1]
                         ) / dx
                     else:
                         # for LOWER BOUNDARY node
                         sf = (
-                            hx[x - 1] + Sub.bedlevel[x - 1] - hx[x] - Sub.bedlevel[x]
+                            hx[x - 1] + Sub.bed_level[x - 1] - hx[x] - Sub.bed_level[x]
                         ) / dx
 
                     # if sf <= 0 :
@@ -420,10 +420,10 @@ class SaintVenant:
                         # if water level in the 1D river is less than the water depth in
                         # nighbouring cell in the 2D grid don't calculate overtopping
 
-                        if storewl[Sub.xsid[x]] - Sub.bedlevel[x] < hx[x]:
+                        if storewl[Sub.xsid[x]] - Sub.bed_level[x] < hx[x]:
                             # if water depth is higher than the left dike height and the threshold
                             if hx[x] > max(
-                                Sub.zl[x] - Sub.bedlevel[x], River.D1["MinDepth"]
+                                Sub.zl[x] - Sub.bed_level[x], River.D1["MinDepth"]
                             ):
                                 # weir formular - free flow
                                 q_outLx[x] = (
@@ -432,7 +432,7 @@ class SaintVenant:
                                     * (
                                         hx[x]
                                         - max(
-                                            Sub.zl[x] - Sub.bedlevel[x],
+                                            Sub.zl[x] - Sub.bed_level[x],
                                             River.D1["MinDepth"],
                                         )
                                     )
@@ -443,9 +443,12 @@ class SaintVenant:
                         q_outRx[x] = 0
                         # nxs is added to the ipf just because of the numbering system of the
                         # cross section
-                        if storewl[Sub.xsid[x] + River.xsno] - Sub.bedlevel[x] < hx[x]:
+                        if (
+                            storewl[Sub.xsid[x] + River.xs_number] - Sub.bed_level[x]
+                            < hx[x]
+                        ):
                             if hx[x] > max(
-                                Sub.zr[x] - Sub.bedlevel[x], River.D1["MinDepth"]
+                                Sub.zr[x] - Sub.bed_level[x], River.D1["MinDepth"]
                             ):
                                 q_outRx[x] = (
                                     self.CWEIR
@@ -453,7 +456,7 @@ class SaintVenant:
                                     * (
                                         hx[x]
                                         - max(
-                                            Sub.zr[x] - Sub.bedlevel[x],
+                                            Sub.zr[x] - Sub.bed_level[x],
                                             River.D1["MinDepth"],
                                         )
                                     )
@@ -471,7 +474,7 @@ class SaintVenant:
 
                     # compute mean area and hydraulic radius
                     # all cross section except the last one
-                    if x < Sub.xsno - 1:
+                    if x < Sub.xs_number - 1:
                         if hx[x] <= Sub.Dbf[x]:
                             # upper discharge
                             xs[x, 6] = 0
@@ -647,7 +650,7 @@ class SaintVenant:
                 # print[800000,'(a3,f8.2,a7,f4.2,a7,f8.2]'] 'dto= ', dto,' ratio=', dto/dt, ' max Q= ',qx[Reach.xsno]
 
                 # update the water level at each cross section except the upstream boundary node
-                for x in range(1, (Sub.xsno) - 2):
+                for x in range(1, (Sub.xs_number) - 2):
                     # check if the XS has laterals
                     # FindInArrayF(real[xsid[x]],sub_XSLaterals,loc)
                     if Sub.xsid[x] in Sub.laterals_table:
@@ -721,7 +724,7 @@ class SaintVenant:
                             hx[x] = dummyh + Sub.Dbf[x]
 
                         # to prevent -ve Sf in the next time step calculation
-                        if hx[x] + Sub.bedlevel[x] > hx[x - 1] + Sub.bedlevel[x - 1]:
+                        if hx[x] + Sub.bed_level[x] > hx[x - 1] + Sub.bed_level[x - 1]:
                             # print[800000,'(a]'] '-----'
                             # print[800000,'(a,i5,a11,i2]'] 'time = ',t , ' round no= ',adaptiveTS_counter
                             # print[800000,'(a9,i5,a4,f10.3]'] 'Q at x = ', xsid[x],' Q= ' ,qx[x]
@@ -730,7 +733,10 @@ class SaintVenant:
                             # print[800000,'(a,i5,a3,f10.4,a2]'] 'H is higher than previous XS= ',xsid[x], "by ", g,' m'
                             # print(*,'(a,i5]'] 'H is higher than previous XS= ',xsid[x]
                             hx[x] = (
-                                hx[x - 1] + Sub.bedlevel[x - 1] - Sub.bedlevel[x] - 0.01
+                                hx[x - 1]
+                                + Sub.bed_level[x - 1]
+                                - Sub.bed_level[x]
+                                - 0.01
                             )
 
                         # this check to prevent the previous step from creating -ve values
@@ -741,7 +747,7 @@ class SaintVenant:
                             hx[x] = 0.01
 
                 # water depth at the last point equals to wl at point before the last
-                hx[Sub.xsno - 1] = hx[Sub.xsno - 2] - 0.001
+                hx[Sub.xs_number - 1] = hx[Sub.xs_number - 2] - 0.001
 
                 if min(hx) < 0:
                     assert False, "calculated water depth is less than 0 "
@@ -759,7 +765,7 @@ class SaintVenant:
 
             # store the calculated water level & water depth
             h[:, t] = hx
-            wl = hx + Sub.bedlevel
+            wl = hx + Sub.bed_level
 
         return q, h, wl
 

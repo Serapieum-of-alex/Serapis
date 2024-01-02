@@ -253,7 +253,7 @@ fig, ax = Sub.plot_hydrograph_progression(
     line_width=2,
     spacing=20,
     fig_size=(6, 4),
-    xlabels=5,
+    x_labels=5,
 )
 
 # plt.savefig(saveto + "/Progression-" + str(Reach.id) + "-" +
@@ -404,7 +404,7 @@ Sub.read_sub_daily_results(start, end, last_river_reach=True)
 # %%
 # negative values
 # TODO : check CheckNegativeQ makes problem
-# Reach.CheckNegativeQ(TS = '1min')
+# Reach.CheckNegativeQ(temporal_resolution = '1min')
 # %% Plotting
 start = "1955-01-01"
 end = "1955-01-10"

@@ -688,7 +688,7 @@ class Calibration(River):
             #         f2.append(f[np.where(f[:, 0] == f1[j])[0][0], 1])
             #     else:
             #         # if it does not exist put zero
-            #         if addHQ2 and self.version == 1:
+            #         if add_hq2 and self.version == 1:
             #             f2.append(CutValue)
             #         else:
             #             f2.append(0)

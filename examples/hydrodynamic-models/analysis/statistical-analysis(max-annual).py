@@ -177,7 +177,7 @@ for i in range(len(Qgauges)):
     SubID = Qgauges.loc[i, "SubID"]
     # SubID = Rhine_obs.SP.loc[i, 'id']
     fig, ax1 = plt.subplots(figsize=(8.6, 4.7))
-    # xlabels = ['RP2','RP5','RP10','RP15','RP20','RP50','RP100']
+    # x_labels = ['RP2','RP5','RP10','RP15','RP20','RP50','RP100']
 
     ax1.plot(
         Rhine_obs.Qrp.columns.tolist(),

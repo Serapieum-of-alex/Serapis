@@ -619,7 +619,7 @@ def test_PlotHydrographProgression(
         line_width=2,
         spacing=20,
         fig_size=(6, 4),
-        xlabels=5,
+        x_labels=5,
     )
     plt.close()
     assert isinstance(fig, Figure)
@@ -728,7 +728,7 @@ def test_SaveHydrograph(
     sub.read_1d_results(extension=".zip")
     sub.save_hydrograph(sub.last_xs)
     # option 2
-    sub.save_hydrograph(sub.last_xs, Option=2)
+    sub.save_hydrograph(sub.last_xs, option=2)
 
 
 def test_ReadBoundaryConditions(

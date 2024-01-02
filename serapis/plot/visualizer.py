@@ -1435,7 +1435,7 @@ class Visualize:
             startxs_ind = Sub.xs_names.index(from_xs)
 
         if not to_xs:
-            endxs_ind = Sub.xsno - 1
+            endxs_ind = Sub.xs_number - 1
         else:
             endxs_ind = Sub.xs_names.index(to_xs)
 
