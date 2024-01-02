@@ -46,9 +46,9 @@ River.read_1d_config_file(Path)
 IF = Interface("Rhine")
 IF.read_xs(RIM2Files + "/XS.csv")
 IF.read_river_network(RIM2Files + "/rivernetwork.txt")
-IF.readLateralsTable(wpath + "/inputs/1d/topo/laterals-segment24.txt")
-IF.readLaterals(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-IF.readBoundaryConditionsTable(
+IF.read_laterals_table(wpath + "/inputs/1d/topo/laterals-segment24.txt")
+IF.read_laterals(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
+IF.read_boundary_conditions_table(
     wpath + "/inputs/1d/topo/BonundaryConditions-segment24.txt"
 )
 IF.read_boundary_conditions(Path=wpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")

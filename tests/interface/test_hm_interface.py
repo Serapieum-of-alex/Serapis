@@ -12,7 +12,7 @@ def test_readLateralsTable(
 ):
     IF = Interface("Rhine", start=dates[0])
     IF.read_xs(river_cross_section_path)
-    IF.readLateralsTable(interface_laterals_table_path)
+    IF.read_laterals_table(interface_laterals_table_path)
 
     assert len(IF.laterals_table) == 9 and len(IF.laterals_table.columns) == 2
 
@@ -29,8 +29,8 @@ class TestreadLaterals:
     ):
         IF = Interface("Rhine", start=dates[0])
         IF.read_xs(river_cross_section_path)
-        IF.readLateralsTable(interface_laterals_table_path)
-        IF.readLaterals(
+        IF.read_laterals_table(interface_laterals_table_path)
+        IF.read_laterals(
             path=interface_laterals_folder, date_format=interface_laterals_date_format
         )
         assert (
@@ -49,8 +49,8 @@ class TestreadLaterals:
     ):
         IF = Interface("Rhine", start=dates[0])
         IF.read_xs(river_cross_section_path)
-        IF.readLateralsTable(interface_laterals_table_path)
-        IF.readLaterals(
+        IF.read_laterals_table(interface_laterals_table_path)
+        IF.read_laterals(
             path=interface_laterals_folder,
             date_format=interface_laterals_date_format,
             cores=True,
@@ -66,7 +66,7 @@ def test_readBoundaryConditionsTable(
     interface_bc_path: str,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.readBoundaryConditionsTable(interface_bc_path)
+    IF.read_boundary_conditions_table(interface_bc_path)
 
     assert len(IF.bc_table) == 2 and len(IF.bc_table.columns) == 2
 
@@ -79,7 +79,7 @@ def test_ReadBoundaryConditions(
     test_time_series_length: int,
 ):
     IF = Interface("Rhine", start=dates[0])
-    IF.readBoundaryConditionsTable(interface_bc_path)
+    IF.read_boundary_conditions_table(interface_bc_path)
     IF.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
@@ -98,8 +98,8 @@ def test_ReadRRMProgression(
 ):
     IF = Interface("Rhine", start=dates[0])
     IF.read_xs(river_cross_section_path)
-    IF.readLateralsTable(interface_laterals_table_path)
-    IF.readLaterals(
+    IF.read_laterals_table(interface_laterals_table_path)
+    IF.read_laterals(
         path=rrm_resutls_hm_location,
         date_format=interface_laterals_date_format,
         laterals=False,

@@ -1,6 +1,6 @@
-"""Created on Wed Mar  3 12:40:23 2021.
+"""Interface.
 
-@author: mofarrag
+Interface between the Rainfall runoff model and the Hydraulic model.
 """
 import datetime as dt
 from typing import Any, Optional, Union
@@ -60,7 +60,7 @@ class Interface(River):
         self.BC = None
         pass
 
-    def readLateralsTable(
+    def read_laterals_table(
         self, path: str, prefix: str = "lf_xsid", suffix: str = ".txt"
     ) -> None:
         """ReadLateralsTable.
@@ -114,7 +114,7 @@ class Interface(River):
                 "Please read the cross section file first using the method 'ReadCrossSections'"
             )
 
-    def _readRRMwrapper(
+    def _read_rrm_wrapper(
         self,
         table: DataFrame,
         from_day: int = None,
@@ -206,7 +206,7 @@ class Interface(River):
 
         return rrm_ts
 
-    def readLaterals(
+    def read_laterals(
         self,
         from_day: int = None,
         to_day: int = None,
@@ -264,7 +264,7 @@ class Interface(River):
             )
 
         if len(self.laterals_table) > 0:
-            rrm_df = self._readRRMwrapper(
+            rrm_df = self._read_rrm_wrapper(
                 self.laterals_table,
                 from_day=from_day,
                 to_day=to_day,
@@ -281,24 +281,22 @@ class Interface(River):
         else:
             logger.info("There are no Laterals table please check")
 
-    def readBoundaryConditionsTable(self, path, prefix="bc_xsid", suffix=".txt"):
-        """readBoundaryConditionsTable.
+    def read_boundary_conditions_table(self, path, prefix="bc_xsid", suffix=".txt"):
+        """read_boundary_conditions_table.
 
-        ReadLateralsTable method reads the laterals file
-            laterals file : file contains the xsid of the cross-sections that
-            has laterals
-        if the user has already read te cross section file, the methos is going
-        to add column to the crosssection dataframe attribute and is going to add
-        a value of 1 to the xs that has laterals
+            read_boundary_conditions_table method reads the boundary condition file
+            boundary condition file : file contains the xsid of the cross-sections that has boundary conditions.
+            if the user has already read the cross-section file, the method is going to add column to the
+            cross-section dataframe attribute and is going to add a value of 1 to the xs that has laterals.
 
         Parameters
         ----------
-        path : [String], optional
+        path: [String], optional
             path to read the results from.
         suffix: [string]
-            if the lateral files has a suffix in their names
+            if the lateral files have a suffix in their names
         prefix: [string]
-            `if the lateral files has a prefix in their names
+            `if the lateral files have a prefix in their names
 
         Returns
         -------
@@ -327,35 +325,33 @@ class Interface(River):
 
         Parameters
         ----------
-        from_day : [integer], optional
-                the day you want to read the result from, the first day is 1 not zero.The default is ''.
-        to_day : [integer], optional
+        from_day: [integer], optional
+                the day you want to read the result from, the first day is 1 not zero. The default is ''.
+        to_day: [integer], optional
                 the day you want to read the result to.
-        path : [String], optional
+        path: [String], optional
             path to read the results from. The default is ''.
-        date_format : "TYPE, optional
+        date_format: "TYPE, optional
             DESCRIPTION. The default is "'%Y-%m-%d'".
         prefix: [str]
             prefix used to distinguish the boundary condition files, Default is "bc_xsid".
         cores: Optional[Union[int, bool]]
-            if True the code will use all the cores except one, if integer the code will use the given number
-            of cores for parallel io. Default is
-            None.
+            if True, the code will use all the cores except one, if integer the code will use the given number
+            of cores for parallel io. Default is None.
 
         Returns
         -------
-        us_hydrographs : [dataframe attribute].
-            dataframe contains the hydrograph of each of the upstream segments
-            with segment id as a column name and a column 'total' contains the
-            sum of all the hydrographs.
+        us_hydrographs: [dataframe attribute].
+            dataframe contains the hydrograph of each of the upstream segments with segment id as a column name and
+            a column 'total' contains the sum of all the hydrographs.
         """
         if not isinstance(self.bc_table, DataFrame):
             raise ValueError(
-                "Please read the lateras table first using the 'ReadLateralsTable' method"
+                "Please read the laterals table first using the 'ReadLateralsTable' method"
             )
 
         self.BC = pd.DataFrame()
-        self.BC = self._readRRMwrapper(
+        self.BC = self._read_rrm_wrapper(
             self.bc_table,
             from_day=from_day,
             to_day=to_day,
@@ -364,20 +360,3 @@ class Interface(River):
             prefix=prefix,
             cores=cores,
         )
-
-    def ListAttributes(self):
-        """ListAttributes.
-
-        Print Attributes List
-        """
-        logger.debug("\n")
-        logger.debug(
-            f"Attributes List of: {repr(self.__dict__['name'])} - {self.__class__.__name__} Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")

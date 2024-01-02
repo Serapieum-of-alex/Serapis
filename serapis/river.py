@@ -1339,7 +1339,7 @@ class River:
         )
 
         usbc = self.usbc.loc[self.reference_index_results, :]
-        SaintVenant.kinematic1d(self, usbc)
+        SaintVenant.kinematic_1d(self, usbc)
 
     def preissmann(
         self,
@@ -1408,7 +1408,7 @@ class River:
         # usbc = self.qusbc.loc[self.reference_index_results,:]
         # dsbc = self.qusbc.loc[self.reference_index_results, :]
         saintpreis = SaintVenant(
-            maxiteration=max_iteration, beta=beta, epsi=epsi, theta=theta
+            max_iteration=max_iteration, beta=beta, epsi=epsi, theta=theta
         )
         saintpreis.preissmann(self)
 
@@ -1460,7 +1460,7 @@ class River:
         )
 
         usbc = self.usbc.loc[self.reference_index_results, :]
-        SaintVenant.storagecell(self, usbc)
+        SaintVenant.storage_cell(self, usbc)
 
     def animate_flood_wave(
         self,

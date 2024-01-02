@@ -100,9 +100,9 @@ River.rrm_path = rrmpath
 IF = Interface("Rhine", start=start)
 IF.read_xs(xs_file)
 IF.read_river_network(river_network)
-IF.readLateralsTable(laterals_table_path)
-IF.readLaterals(laterals_path, date_format="%d_%m_%Y")
-IF.readBoundaryConditionsTable(boundary_condition_table)
+IF.read_laterals_table(laterals_table_path)
+IF.read_laterals(laterals_path, date_format="%d_%m_%Y")
+IF.read_boundary_conditions_table(boundary_condition_table)
 IF.read_boundary_conditions(path=boundary_condition_path, date_format="%d_%m_%Y")
 # %% river segment
 """ Write the segment-ID you want to visualize its results """

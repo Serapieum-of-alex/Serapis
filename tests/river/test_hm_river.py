@@ -84,14 +84,14 @@ def test_sub_get_flow(
     sub = Reach(segment1, rivers)
 
     interface = Interface("Rhine", start=dates[0])
-    interface.readBoundaryConditionsTable(interface_bc_path)
+    interface.read_boundary_conditions_table(interface_bc_path)
     interface.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
     interface.read_xs(river_cross_section_path)
-    interface.readLateralsTable(interface_laterals_table_path)
-    interface.readLaterals(
+    interface.read_laterals_table(interface_laterals_table_path)
+    interface.read_laterals(
         path=interface_laterals_folder, date_format=interface_laterals_date_format
     )
 
@@ -283,14 +283,14 @@ def test_sub_get_laterals(
     sub = Reach(segment1, rivers)
 
     interface = Interface("Rhine", start=dates[0])
-    interface.readBoundaryConditionsTable(interface_bc_path)
+    interface.read_boundary_conditions_table(interface_bc_path)
     interface.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
     interface.read_xs(river_cross_section_path)
-    interface.readLateralsTable(interface_laterals_table_path)
-    interface.readLaterals(
+    interface.read_laterals_table(interface_laterals_table_path)
+    interface.read_laterals(
         path=interface_laterals_folder, date_format=interface_laterals_date_format
     )
 
@@ -405,14 +405,14 @@ class TestGetTotalFlow:
         rivers.read_river_network(river_network_path)
         rivers.customized_runs_path = CustomizedRunspath
         interface = Interface("Rhine", start=dates[0])
-        interface.readBoundaryConditionsTable(interface_bc_path)
+        interface.read_boundary_conditions_table(interface_bc_path)
         interface.read_boundary_conditions(
             path=interface_bc_folder, date_format=interface_bc_date_format
         )
 
         interface.read_xs(river_cross_section_path)
-        interface.readLateralsTable(interface_laterals_table_path)
-        interface.readLaterals(
+        interface.read_laterals_table(interface_laterals_table_path)
+        interface.read_laterals(
             path=interface_laterals_folder, date_format=interface_laterals_date_format
         )
 
@@ -451,14 +451,14 @@ class TestGetTotalFlow:
         rivers.read_river_network(river_network_path)
         rivers.customized_runs_path = CustomizedRunspath
         interface = Interface("Rhine", start=dates[0])
-        interface.readBoundaryConditionsTable(interface_bc_path)
+        interface.read_boundary_conditions_table(interface_bc_path)
         interface.read_boundary_conditions(
             path=interface_bc_folder, date_format=interface_bc_date_format
         )
 
         interface.read_xs(river_cross_section_path)
-        interface.readLateralsTable(interface_laterals_table_path)
-        interface.readLaterals(
+        interface.read_laterals_table(interface_laterals_table_path)
+        interface.read_laterals(
             path=interface_laterals_folder, date_format=interface_laterals_date_format
         )
 
@@ -517,14 +517,14 @@ def test_PlotQ(
     rivers.one_d_result_path = read_1d_result_path
 
     interface = Interface("Rhine", start=dates[0])
-    interface.readBoundaryConditionsTable(interface_bc_path)
+    interface.read_boundary_conditions_table(interface_bc_path)
     interface.read_boundary_conditions(
         path=interface_bc_folder, date_format=interface_bc_date_format
     )
 
     interface.read_xs(river_cross_section_path)
-    interface.readLateralsTable(interface_laterals_table_path)
-    interface.readLaterals(
+    interface.read_laterals_table(interface_laterals_table_path)
+    interface.read_laterals(
         path=interface_laterals_folder, date_format=interface_laterals_date_format
     )
 

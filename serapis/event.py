@@ -599,12 +599,12 @@ class Event:
                 i, ["DEM_Error", "PreviousDepthError", "TOOMuchWaterError"]
             ].tolist()
 
-        self._event_index["vol_error"] = (
+        self._event_index["VolError"] = (
             self._event_index["StepError"]
             + self._event_index["DEMError"]
             + self._event_index["TooMuchWater"]
         )
-        self._event_index["VolError2"] = self._event_index["vol_error"] / 20
+        self._event_index["VolError2"] = self._event_index["VolError"] / 20
 
     def overlay_maps(
         self,

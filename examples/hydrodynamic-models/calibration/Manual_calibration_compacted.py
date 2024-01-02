@@ -65,9 +65,9 @@ River.read_1d_config_file(rpath + "/processing/def1D-1segment_very_steep.txt")
 IF = Interface("Rhine", start=start)
 IF.read_xs(RIM2Files + "/xs_same_downward-3segment.csv")
 IF.read_river_network(RIM2Files + "/rivernetwork-3segments.txt")
-IF.readLateralsTable(rpath + "/inputs/1d/topo/laterals.txt")
-IF.readLaterals(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
-IF.readBoundaryConditionsTable(rpath + "/inputs/1d/topo/boundaryconditions.txt")
+IF.read_laterals_table(rpath + "/inputs/1d/topo/laterals.txt")
+IF.read_laterals(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
+IF.read_boundary_conditions_table(rpath + "/inputs/1d/topo/boundaryconditions.txt")
 IF.read_boundary_conditions(path=rpath + "/inputs/1d/hydro/", date_format="%d_%m_%Y")
 # %% Reach-basin
 """ Write the Reach-ID you want to visualize its results """

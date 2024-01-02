@@ -1,6 +1,4 @@
-"""Created on Tue Mar 16 22:25:59 2021.
-
-@author: mofarrag
+"""SaintVenant equation solver.
 """
 import numpy as np
 from numpy.linalg import inv
@@ -9,18 +7,18 @@ from numpy.linalg import inv
 class SaintVenant:
     """SaintVenant equation solver."""
 
-    def __init__(self, maxiteration=10, beta=1, epsi=0.5, theta=0.5):
+    def __init__(self, max_iteration=10, beta=1, epsi=0.5, theta=0.5):
         """SaintVenant equation solver.
 
         Parameters
         ----------
-        maxiteration: int, optional
+        max_iteration: int, optional
             DESCRIPTION. The default is 10.
         beta: int, optional
             DESCRIPTION. The default is 1.
         epsi: float, optional
             DESCRIPTION. The default is 0.5.
-        theta : float, optional
+        theta: float, optional
             DESCRIPTION. The default is 0.5.
 
         Returns
@@ -31,16 +29,16 @@ class SaintVenant:
         self.theta = theta
         self.epsi = epsi
         self.beta = beta
-        self.maxiteration = maxiteration
+        self.max_iteration = max_iteration
         # Storage cell
-        self.CWEIR = 1.704
-        self.BWIDTH = 10
-        self.HLIN = 0.001
+        self.c_weir = 1.704
+        self.b_width = 10
+        self.hlin = 0.001
         self.power = 2 / 3
 
         pass
 
-    def kinematicraster(self, Model):
+    def kinematic_raster(self, Model):
         """Kinematic wave method Raster."""
 
         beta = 3 / 5
@@ -59,29 +57,34 @@ class SaintVenant:
                     alpha1 = n * pow(p, 2 / 3)
 
                     # get the hydrograph of the upstream cells
-                    UScells = Model.FDT[str(i) + "," + str(j)]
+                    upstream_cells = Model.FDT[str(i) + "," + str(j)]
                     hyd = np.zeros(Model.TS, dtype=np.float32)
-                    Laterals = np.zeros(Model.TS, dtype=np.float32)
+                    laterals = np.zeros(Model.TS, dtype=np.float32)
 
-                    # get the US cells and check which is river and which is lateral
-                    rivercells = list()
-                    lateralcells = list()
+                    # get the US cells, and checks which is a river and which is a lateral.
+                    river_cells = list()
+                    lateral_cells = list()
                     f = 0
-                    for k in range(len(UScells)):
-                        if Model.BankfullDepth[UScells[k][0], UScells[k][1]] == 0:
-                            lateralcells.append(UScells[k])
+                    for k in range(len(upstream_cells)):
+                        if (
+                            Model.BankfullDepth[
+                                upstream_cells[k][0], upstream_cells[k][1]
+                            ]
+                            == 0
+                        ):
+                            lateral_cells.append(upstream_cells[k])
                         else:
                             f = f + 1
-                            rivercells.append(UScells[k])
+                            river_cells.append(upstream_cells[k])
                     # if the beginning of a river
                     if f == 0:
                         # get the sum of laterals as one hydrograph and route it
                         s = 0
-                        for k in range(len(lateralcells)):
+                        for k in range(len(lateral_cells)):
                             s = (
                                 s
                                 + (
-                                    Model.DEM[lateralcells[k][0], lateralcells[k][1]]
+                                    Model.DEM[lateral_cells[k][0], lateral_cells[k][1]]
                                     - Model.DEM[i, j]
                                 )
                                 / dx
@@ -89,13 +92,14 @@ class SaintVenant:
                             hyd = (
                                 hyd
                                 + Model.quz_routed[
-                                    lateralcells[k][0], lateralcells[k][1], :
+                                    lateral_cells[k][0], lateral_cells[k][1], :
                                 ]
                             )
+
                         # get average slope
-                        s = s / len(lateralcells)
-                        if s < self.HLIN / dx:
-                            s = self.HLIN / dx
+                        s = s / len(lateral_cells)
+                        if s < self.hlin / dx:
+                            s = self.hlin / dx
                         alpha = pow(alpha1 / pow(s, 0.5), 0.6)
                         Q = np.zeros(Model.TS, dtype=np.float32)
                         Q[0] = Model.quz[i, j, 0]
@@ -106,30 +110,30 @@ class SaintVenant:
 
                         Model.quz_routed[i, j, :] = Q
                     else:
-                        # if not the beginning of a river sum lateras and take them as one lateral time series
-                        for k in range(len(lateralcells)):
-                            Laterals = (
-                                Laterals
+                        # if not the beginning of a river sum laterals and take them as one lateral time series
+                        for k in range(len(lateral_cells)):
+                            laterals = (
+                                laterals
                                 + Model.quz_routed[
-                                    lateralcells[k][0], lateralcells[k][1], :
+                                    lateral_cells[k][0], lateral_cells[k][1], :
                                 ]
                             )
 
                         for k in range(f):
-                            # print(rivercells[k])
+                            # print(river_cells[k])
                             hyd = (
                                 hyd
                                 + Model.quz_routed[
-                                    rivercells[k][0], rivercells[k][1], :
+                                    river_cells[k][0], river_cells[k][1], :
                                 ]
                             )
                             s = (
-                                Model.DEM[rivercells[k][0], rivercells[k][1]]
+                                Model.DEM[river_cells[k][0], river_cells[k][1]]
                                 - Model.DEM[i, j]
                             ) / dx
 
-                            if s < self.HLIN / dx:
-                                s = self.HLIN / dx
+                            if s < self.hlin / dx:
+                                s = self.hlin / dx
 
                             alpha = pow(alpha1 / pow(s, 0.5), 0.6)
                             Q = np.zeros(Model.TS, dtype=np.float32)
@@ -144,14 +148,16 @@ class SaintVenant:
                                 Q[t] = (
                                     dtx * hyd[t]
                                     + val1 * Q[t - 1]
-                                    + (Laterals[t] + Laterals[t - 1]) / 2
+                                    + (laterals[t] + laterals[t - 1]) / 2
                                 ) / (dtx + val1)
 
                             Model.quz_routed[i, j, :] = Model.quz_routed[i, j, :] + Q
 
     @staticmethod
-    def kinematic1d(Model, usbc):
-        """Kkinematic wave approx solver for 1D river reach considering very wide cross section.
+    def kinematic_1d(Model, upstream_boundary_condition):
+        """kinematic_1d
+
+            Kinematic wave approx solver for 1D river reach considering a very wide cross-section.
 
         Parameters
         ----------
@@ -163,7 +169,7 @@ class SaintVenant:
         None.
         """
 
-        nt = len(usbc)  # int(24*60*60/Model.dt)
+        nt = len(upstream_boundary_condition)  # int(24*60*60/Model.dt)
         Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
         Model.h = np.zeros(shape=(nt, len(Model.cross_sections)))
 
@@ -171,7 +177,7 @@ class SaintVenant:
         dtx = Model.dt / Model.dx
         # columns are space, rows are time
         Model.q[0, :] = Model.icq
-        Model.q[: len(Model.usbc), 0] = usbc.loc[:, "q"]
+        Model.q[: len(Model.usbc), 0] = upstream_boundary_condition.loc[:, "q"]
 
         for t in range(1, len(Model.q)):
             for x in range(1, len(Model.cross_sections)):
@@ -208,13 +214,13 @@ class SaintVenant:
         Model.wl = Model.h + Model.cross_sections["bed level"].values
 
     @staticmethod
-    def storagecell(Model, usbc):
+    def storage_cell(Model, usbc):
         """Storage Cell Model."""
 
         nt = len(usbc)
         Model.q = np.zeros(shape=(nt, len(Model.cross_sections)))
         Model.h = np.zeros(shape=(nt, len(Model.cross_sections)))
-        # calculate area and perimeter of all xssbased on the
+        # calculate the area and the perimeter of all xs's.
         xs = np.zeros(shape=(Model.xs_number, 2))
         Model.h[0, :] = 0.1
         Model.q[0, :] = Model.InihQ
@@ -250,8 +256,10 @@ class SaintVenant:
                     ) / Model.dx
 
                 if x < Model.xs_number - 1:
-                    Area = (xs[x, 1] + xs[x + 1, 2]) / 2
-                    R = (xs[x, 1] / xs[x, 2] + xs[x + 1, 1] / xs[x + 1, 2]) / 2
+                    area = (xs[x, 1] + xs[x + 1, 2]) / 2
+                    hydraulic_radius = (
+                        xs[x, 1] / xs[x, 2] + xs[x + 1, 1] / xs[x + 1, 2]
+                    ) / 2
 
                 # p = Model.cross_sections.loc[x,'b'] + 2 * Model.cross_sections.loc[x,'depth']
                 p = Model.cross_sections.loc[x, "b"]
@@ -285,7 +293,7 @@ class SaintVenant:
         Model.h[:, 0] = Model.h[:, 1]
         Model.wl = Model.h + Model.cross_sections["bed level"].values
 
-    def GVF00(self, Sub, River, Hbnd, dt, dx, inih, storewl, MinQ):
+    def gvf00(self, Sub, River, Hbnd, dt, dx, inih, storewl, min_q):
         """GVF00.
 
             Gradually Varied flow
@@ -299,7 +307,7 @@ class SaintVenant:
         dx
         inih
         storewl
-        MinQ
+        min_q
         """
 
         xs = np.zeros(shape=(Sub.xs_number, 8))
@@ -316,7 +324,7 @@ class SaintVenant:
         storewl = np.zeros(shape=(River.xs_number, 2))
         # OverTopFlow = np.zeros(shape=(River.xsno*2,24))
         # OverTopWL = np.zeros(shape=(River.xsno*2,24))
-        Lateral_q = MinQ.values[:-1, :-2]
+        Lateral_q = min_q.values[:-1, :-2]
 
         q_outL = np.zeros(shape=(Sub.xs_number, River.TS))
         q_outR = np.zeros(shape=(Sub.xs_number, River.TS))
@@ -427,8 +435,8 @@ class SaintVenant:
                             ):
                                 # weir formular - free flow
                                 q_outLx[x] = (
-                                    self.CWEIR
-                                    * self.BWIDTH
+                                    self.c_weir
+                                    * self.b_width
                                     * (
                                         hx[x]
                                         - max(
@@ -451,8 +459,8 @@ class SaintVenant:
                                 Sub.zr[x] - Sub.bed_level[x], River.D1["MinDepth"]
                             ):
                                 q_outRx[x] = (
-                                    self.CWEIR
-                                    * self.BWIDTH
+                                    self.c_weir
+                                    * self.b_width
                                     * (
                                         hx[x]
                                         - max(
@@ -558,7 +566,7 @@ class SaintVenant:
                             ) / 2  # mean radius
 
                     # calculation of fluxes
-                    if abs(sf) > self.HLIN / dx:
+                    if abs(sf) > self.hlin / dx:
                         # diffusive wave coefficient for upper wave
                         Diff_coeff[x, 0] = Diff_coeff[x, 0] / np.sqrt(abs(sf))
                         # diffusive wave coefficient for Lower wave
@@ -579,27 +587,27 @@ class SaintVenant:
                         )
                     else:
                         # diffusive wave coefficient for upper wave
-                        Diff_coeff[x, 0] = Diff_coeff[x, 0] / np.sqrt(self.HLIN / dx)
+                        Diff_coeff[x, 0] = Diff_coeff[x, 0] / np.sqrt(self.hlin / dx)
 
                         # diffusive wave coefficient for Lower wave
                         Diff_coeff[x, 1] = (
                             (1.0 / Sub.mn[x])
                             * (R_LM**self.power)
-                            / np.sqrt(self.HLIN / dx)
+                            / np.sqrt(self.hlin / dx)
                         )
                         # total diffusion coefficient
                         Diff_coeff[x, 2] = Diff_coeff[x, 0] + Diff_coeff[x, 1]
 
                         # discharge
                         # upper discharge
-                        xs[x, 6] = xs[x, 6] * (np.sqrt(dx / self.HLIN) * sf)
+                        xs[x, 6] = xs[x, 6] * (np.sqrt(dx / self.hlin) * sf)
                         # xs[x,7] = xs[x,7] * (np.sqrt(HLINQ/dx]]
                         # Lower discharge
                         xs[x, 7] = (
                             (1.0 / Sub.mn[x])
                             * Area_LM
                             * (R_LM**self.power)
-                            * (np.sqrt(dx / self.HLIN) * sf)
+                            * (np.sqrt(dx / self.hlin) * sf)
                         )
                         # xs[x,8] = (1.0/mn[x]] * Area_LM * (R_LM** (2.0/3.0]] * (np.sqrt(HLINQ/dx]]
 
@@ -826,7 +834,7 @@ class SaintVenant:
         # start of computation
         for t in range(1, T):
             # Iteration
-            for it in range(self.maxiteration):
+            for it in range(self.max_iteration):
                 # for the first iteration assume that the current and next value of Q & H is
                 # the same like the previous step
                 if it == 0:
