@@ -15,7 +15,7 @@ def test_create_calibration_instance(
 
 def test_ReadGaugesTable(gauges_table_path: str):
     Calib = RC.Calibration("HM", version=3)
-    Calib.readGaugesTable(gauges_table_path)
+    Calib.read_gauges_table(gauges_table_path)
     assert len(Calib.hm_gauges) == 3 and len(Calib.hm_gauges.columns) == 10
 
 
@@ -29,8 +29,8 @@ def test_ReadObservedQ(
     test_time_series_length: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedQ(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
@@ -55,8 +55,8 @@ def test_ReadObservedWL(
     test_time_series_length: int,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
@@ -81,7 +81,7 @@ def test_CalculateProfile(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.calculateProfile(
+    Calib.calculate_profile(
         segment3,
         calibrateProfile_DS_bedlevel,
         calibrateProfile_mn,
@@ -101,7 +101,7 @@ def test_SmoothMaxSlope(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothMaxSlope(segment3)
+    Calib.smooth_max_slope(segment3)
 
 
 def test_SmoothBedLevel(
@@ -111,7 +111,7 @@ def test_SmoothBedLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothBedLevel(segment3)
+    Calib.smooth_bed_level(segment3)
 
 
 def test_SmoothDikeLevel(
@@ -121,7 +121,7 @@ def test_SmoothDikeLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothDikeLevel(segment3)
+    Calib.smooth_dike_level(segment3)
 
 
 def test_DownWardBedLevel(
@@ -132,7 +132,7 @@ def test_DownWardBedLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.downWardBedLevel(segment3, DownWardBedLevel_height)
+    Calib.downward_bed_level(segment3, DownWardBedLevel_height)
 
 
 def test_SmoothBankLevel(
@@ -142,7 +142,7 @@ def test_SmoothBankLevel(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothBankLevel(segment3)
+    Calib.smooth_bank_level(segment3)
 
 
 def test_SmoothFloodplainHeight(
@@ -152,7 +152,7 @@ def test_SmoothFloodplainHeight(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothFloodplainHeight(segment3)
+    Calib.smooth_floodplain_height(segment3)
 
 
 def test_SmoothBedWidth(
@@ -162,7 +162,7 @@ def test_SmoothBedWidth(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.smoothBedWidth(segment3)
+    Calib.smooth_bed_width(segment3)
 
 
 def test_CheckFloodplain(
@@ -172,7 +172,7 @@ def test_CheckFloodplain(
 ):
     Calib = RC.Calibration("HM", version=version)
     Calib.read_xs(river_cross_section_path)
-    Calib.checkFloodplain()
+    Calib.check_floodplain()
 
 
 def test_ReadRRM(
@@ -182,8 +182,8 @@ def test_ReadRRM(
     rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
     assert len(Calib.q_rrm) == test_time_series_length and len(
         Calib.q_rrm.columns
     ) == len(rrmgauges)
@@ -197,8 +197,8 @@ def test_ReadHMQ(
     rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_hm_discharge(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
     assert len(Calib.q_hm) == test_time_series_length and len(
         Calib.q_hm.columns
     ) == len(rrmgauges)
@@ -212,8 +212,8 @@ def test_ReadHMWL(
     rrmgauges: List[int],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_hm_water_level(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
     assert len(Calib.wl_hm) == test_time_series_length and len(
         Calib.wl_hm.columns
     ) == len(rrmgauges)
@@ -233,8 +233,8 @@ class Test_GetAnnualMax:
     ):
         """test extracting max annual observed discharge."""
         Calib = RC.Calibration("HM", version=3)
-        Calib.readGaugesTable(gauges_table_path)
-        Calib.readObservedQ(
+        Calib.read_gauges_table(gauges_table_path)
+        Calib.read_observed_q(
             ObservedQ_long_ts_Path,
             ObservedQ_long_ts_dates[0],
             ObservedQ_long_ts_dates[1],
@@ -243,7 +243,7 @@ class Test_GetAnnualMax:
         )
         # RIM.ReadObservedQ(ObservedPath, GRDCStartDate, GRDCEndDate, NoValue)
 
-        Calib.getAnnualMax(option=1)
+        Calib.get_annual_max(option=1)
         assert len(Calib.annual_max_obs_q) == ObservedQ_long_ts_len
         assert len(Calib.annual_max_obs_q.columns) == gauges_numbers
 
@@ -256,10 +256,10 @@ class Test_GetAnnualMax:
     ):
         """test extracting max annual hydrologic model simulated discharge."""
         Calib = RC.Calibration("HM", version=3)
-        Calib.readGaugesTable(gauges_table_path)
-        Calib.readRRM(rrmpath_long_ts, fmt="'%Y-%m-%d'")
+        Calib.read_gauges_table(gauges_table_path)
+        Calib.read_rrm(rrmpath_long_ts, fmt="'%Y-%m-%d'")
 
-        Calib.getAnnualMax(option=3)
+        Calib.get_annual_max(option=3)
         assert len(Calib.annual_max_rrm) == rrm_long_ts_number
         assert len(Calib.annual_max_rrm.columns) == gauges_numbers
 
@@ -272,10 +272,10 @@ class Test_GetAnnualMax:
     ):
         """test extracting max annual hydraulic model simulated discharge."""
         Calib = RC.Calibration("HM", version=3)
-        Calib.readGaugesTable(gauges_table_path)
-        Calib.readHMQ(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
+        Calib.read_gauges_table(gauges_table_path)
+        Calib.read_hm_discharge(hm_separated_results_q_long_ts_path, fmt="'%Y-%m-%d'")
 
-        Calib.getAnnualMax(option=4)
+        Calib.get_annual_max(option=4)
         assert len(Calib.annual_max_hm_q) == hm_long_ts_number
         assert len(Calib.annual_max_hm_q.columns) == gauges_numbers
 
@@ -289,10 +289,10 @@ def test_HMvsRRM(
     Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
-    Calib.HMvsRRM()
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_hm_discharge(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_rrm()
     assert isinstance(Calib.metrics_hm_vs_rrm, DataFrame) and isinstance(
         Calib.metrics_hm_vs_rrm, GeoDataFrame
     )
@@ -314,16 +314,16 @@ def test_RRMvsObserved(
     Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedQ(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
-    Calib.RRMvsObserved()
+    Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.rrm_vs_observed()
     assert isinstance(Calib.metrics_rrm_vs_obs, DataFrame) and isinstance(
         Calib.metrics_rrm_vs_obs, GeoDataFrame
     )
@@ -347,16 +347,16 @@ def test_HMQvsObserved(
     Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedQ(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMQvsObserved()
+    Calib.read_hm_discharge(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_discharge()
     assert isinstance(Calib.metrics_hm_q_vs_obs, DataFrame) and isinstance(
         Calib.metrics_hm_q_vs_obs, GeoDataFrame
     )
@@ -380,16 +380,16 @@ def test_HMWLvsObserved(
     Metrics_table_columns: List[str],
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMWLvsObserved()
+    Calib.read_hm_water_level(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_water_level()
     assert isinstance(Calib.metrics_hm_wl_vs_obs, DataFrame) and isinstance(
         Calib.metrics_hm_wl_vs_obs, GeoDataFrame
     )
@@ -417,31 +417,31 @@ def test_InspectGauge(
     InspectGauge_sub_id: int,
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMWLvsObserved()
-    Calib.readObservedQ(
+    Calib.read_hm_water_level(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_water_level()
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMQvsObserved()
+    Calib.read_hm_discharge(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_discharge()
 
-    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
-    Calib.HMvsRRM()
-    Calib.RRMvsObserved()
+    Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_rrm()
+    Calib.rrm_vs_observed()
     gaugei = 0
-    summary, fig, ax = Calib.InspectGauge(InspectGauge_sub_id, gaugei=gaugei)
+    summary, fig, ax = Calib.Inspect_gauge(InspectGauge_sub_id, gaugei=gaugei)
     assert isinstance(fig, Figure)
     assert isinstance(summary, DataFrame)
     assert all(elem in summary.columns.to_list() for elem in Metrics_table_columns)
@@ -461,27 +461,27 @@ def test_SaveMetices(
     hm_saveto: str,
 ):
     Calib = RC.Calibration("HM", version=3, start=dates[0])
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMWL(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMWLvsObserved()
-    Calib.readObservedQ(
+    Calib.read_hm_water_level(hm_separated_wl_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_water_level()
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
         nodatavalu,
         gauge_date_format=gauge_date_format,
     )
-    Calib.readHMQ(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
-    Calib.HMQvsObserved()
+    Calib.read_hm_discharge(hm_separated_q_results_path, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_observed_discharge()
 
-    Calib.readRRM(rrmpath, fmt="'%Y-%m-%d'")
-    Calib.HMvsRRM()
-    Calib.RRMvsObserved()
-    Calib.saveMetices(hm_saveto)
+    Calib.read_rrm(rrmpath, fmt="'%Y-%m-%d'")
+    Calib.hm_vs_rrm()
+    Calib.rrm_vs_observed()
+    Calib.save_metices(hm_saveto)

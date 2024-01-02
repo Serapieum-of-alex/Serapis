@@ -69,7 +69,7 @@ class Inputs(River):
         None.
         """
         if weather_generator:
-            """weather_generator."""
+            # weather_generator
             rrm_result_file = file_prefix + str(realization) + ".dat"
             # 4-5
             # check whether the name of the realization the same as the name of 3 the saving file or not to prevent
@@ -83,13 +83,12 @@ class Inputs(River):
                     save_path[-2:]
                 ), " Wrong files sync "
         else:
-            """Observed data."""
+            # Observed data.
             rrm_result_file = file_prefix + str(realization) + ".dat"
 
-        """
-        rrm writes the year as the first column then day as a second column and the discharge values start from the
-        thirst column, so you have to write number of columns to be ignored at the beginning
-        """
+        # rrm writes the year as the first column then day as a second column and the discharge values start from the
+        # thirst column, so you have to write number of columns to be ignored at the beginning
+
         ignore_columns = 2
 
         # read SWIM result file

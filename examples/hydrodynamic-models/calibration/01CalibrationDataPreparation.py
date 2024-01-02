@@ -35,7 +35,7 @@ start = "1951-01-01"
 end = "2003-12-31"
 
 Calib = RC.Calibration("RIM", version=3)
-Calib.readGaugesTable(GaugesF)
+Calib.read_gauges_table(GaugesF)
 # %%
 start = "1955-1-1"
 rrmstart = "1955-1-1"

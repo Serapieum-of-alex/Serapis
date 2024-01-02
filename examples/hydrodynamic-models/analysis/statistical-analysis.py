@@ -40,7 +40,7 @@ import Hapi.hm.inputs as IN
 
 GaugesF = "examples/Hydrodynamic models/test_case/inputs/gauges/gauges.csv"
 Calib = RC.Calibration("RIM", version=3)
-Calib.readGaugesTable(GaugesF)
+Calib.read_gauges_table(GaugesF)
 
 # path = CompP + "/base_data/Calibration/"
 # ObservedFile = "GRDC"

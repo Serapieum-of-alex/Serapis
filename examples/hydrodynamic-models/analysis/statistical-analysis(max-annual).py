@@ -39,16 +39,16 @@ Rhine_obs.statistical_properties(
     distribution="Gumbel",
 )
 # %% read the discharge data to get the max annual values
-Calib.readGaugesTable(gauges_files)
+Calib.read_gauges_table(gauges_files)
 # read the gauge flow hydrographs
-Calib.readObservedQ(observed_path, start, end, NoValue)  # ,column="id"
+Calib.read_observed_q(observed_path, start, end, NoValue)  # ,column="id"
 # read the SWIM hydrographs for the gauge sub-basins
-Calib.readRRM(rrm_path)
-Calib.readHMQ(hm_path)
+Calib.read_rrm(rrm_path)
+Calib.read_hm_discharge(hm_path)
 # %% Get the max annual
-Calib.getAnnualMax(option=1)
-Calib.getAnnualMax(option=3)
-Calib.getAnnualMax(option=4)
+Calib.get_annual_max(option=1)
+Calib.get_annual_max(option=3)
+Calib.get_annual_max(option=4)
 
 cols = Calib.hm_gauges["id"].tolist()
 Qgauges = pd.DataFrame()

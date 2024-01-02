@@ -21,7 +21,7 @@ def test_StatisticalProperties(
     distributionpr_gum_columns: list,
 ):
     Calib = RC.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
+    Calib.read_gauges_table(gauges_table_path)
 
     Inputs35 = IN.Inputs("Observed_Q")
     computationalnodes = Calib.hm_gauges["oid"].tolist()

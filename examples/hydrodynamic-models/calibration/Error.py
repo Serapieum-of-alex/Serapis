@@ -37,16 +37,16 @@ novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", start=start)
-Calib.readGaugesTable(gauges_file)
-Calib.readObservedQ(q_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
-Calib.readObservedWL(wl_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
+Calib.read_gauges_table(gauges_file)
+Calib.read_observed_q(q_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
+Calib.read_observed_wl(wl_obs_path, start, end, novalue, gauge_date_format="'%Y-%m-%d'")
 # sort the gauges table based on the segment
 Calib.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 # %% Read RIM results
-Calib.readHMQ(hm_q_path, fmt="'%Y-%m-%d'")
-Calib.readHMWL(hmwl_path, fmt="'%Y-%m-%d'")
+Calib.read_hm_discharge(hm_q_path, fmt="'%Y-%m-%d'")
+Calib.read_hm_water_level(hmwl_path, fmt="'%Y-%m-%d'")
 
-Calib.readRRM(
+Calib.read_rrm(
     f"{rrm_path}/hm_location",
     fmt="'%Y-%m-%d'",
     location=2,
@@ -54,20 +54,20 @@ Calib.readRRM(
 )
 Calib.read_river_network(hm_files + "/rivernetwork-3segments.txt")
 # %% calculate metrics
-Calib.HMvsRRM()  # start ="1990-01-01"
+Calib.hm_vs_rrm()  # start ="1990-01-01"
 # mHM vs observed
-Calib.RRMvsObserved()  # start ="1990-01-01"
+Calib.rrm_vs_observed()  # start ="1990-01-01"
 # GRDC vs RIM
-Calib.HMQvsObserved()  # start ="1990-01-01"
+Calib.hm_vs_observed_discharge()  # start ="1990-01-01"
 # Water levels GRDC vs RIM
-Calib.HMWLvsObserved()  # start ="1990-01-01"
+Calib.hm_vs_observed_water_level()  # start ="1990-01-01"
 # %% plotting Hydrographs
 subid = 1
 gaugei = 0
 # start ="1990-01-01"
 start = ""
 end = ""  # "1994-3-1"
-summary, fig, ax = Calib.InspectGauge(subid, gaugei=gaugei, start=start, end=end)
+summary, fig, ax = Calib.Inspect_gauge(subid, gaugei=gaugei, start=start, end=end)
 print(summary)
 # %% special plot for the poster
 subid = 1
@@ -123,5 +123,5 @@ plt.title("Station: " + str(subid), fontsize=30)
 plt.tight_layout()
 # plt.savefig(str(reach_id)+".tif", transparent=True)
 # %% save Metrics dataframe to display in arc map
-Calib.saveMetices(SaveTo)
+Calib.save_metices(SaveTo)
 # sumarry.to_csv(DataPath + "summary.txt")

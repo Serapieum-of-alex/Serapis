@@ -50,9 +50,9 @@ novalue = -9
 start = "1955-01-01"
 end = "1955-03-21"
 Calib = RC.Calibration("HM", version=3)
-Calib.readGaugesTable(gauges_file)
+Calib.read_gauges_table(gauges_file)
 # read the gauges data
-Calib.readObservedQ(
+Calib.read_observed_q(
     q_files_rpath,
     start,
     end,
@@ -60,7 +60,7 @@ Calib.readObservedQ(
     file_extension=".txt",
     gauge_date_format="'%Y-%m-%d'",
 )
-Calib.readObservedWL(
+Calib.read_observed_wl(
     wl_files_rpath,
     start,
     end,
@@ -175,7 +175,7 @@ try:
 except:
     # read results of at the gauge
     CalibPath = "F:/RFM/mHM2RIM_testcase/RIM/results/calibration/"
-    Calib.readCalirationResult(segment_xs, CalibPath)
+    Calib.read_caliration_result(segment_xs, CalibPath)
     print("calibration result of the XS is read")
 
 # read US boundary  hydrographs
@@ -289,17 +289,17 @@ Calib.slope = River.slope
 BedlevelDS = 88
 Manning = 0.06
 BC_slope = -0.03
-Calib.calculateProfile(SubID, BedlevelDS, Manning, BC_slope)
+Calib.calculate_profile(SubID, BedlevelDS, Manning, BC_slope)
 # River.cross_sections.to_csv(tolopogy_file + "/xs_rhine2.csv", index=False, float_format="%.3f")
 # River.slope.to_csv(tolopogy_file + "/slope2.csv",header=None,index=False)
 # %% Smooth cross section
 Calib.cross_sections = River.cross_sections[:]
-Calib.smoothMaxSlope(SubID)
-Calib.smoothBedLevel(SubID)
-Calib.downWardBedLevel(SubID, 0.05)
+Calib.smooth_max_slope(SubID)
+Calib.smooth_bed_level(SubID)
+Calib.downward_bed_level(SubID, 0.05)
 # Calib.SmoothBankLevel(SubID)
 # Calib.SmoothFloodplainHeight(SubID)
-Calib.smoothBedWidth(SubID)
+Calib.smooth_bed_width(SubID)
 # Calib.CheckFloodplain()
 # Calib.cross_sections.to_csv(tolopogy_file + "/XS2.csv", index=None, float_format="%.3f")
 # %% customized Run result saveing

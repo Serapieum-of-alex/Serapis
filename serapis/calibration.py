@@ -132,7 +132,7 @@ class Calibration(River):
         self.rrm_reference_index = pd.DataFrame(index=list(range(1, rrm_days + 1)))
         self.rrm_reference_index["date"] = ref_ind[:-1]
 
-    def readGaugesTable(self, path: str):
+    def read_gauges_table(self, path: str):
         """ReadGaugesTable.
 
         readGaugesTable reads the table of the gauges
@@ -167,7 +167,7 @@ class Calibration(River):
         --------
         >>> import serapis.hm.calibration as rc
         >>> Calib = rc.Calibration("Hydraulic model", gauge_id_col="id")
-        >>> Calib.readGaugesTable("path/to/gauges.geojson")
+        >>> Calib.read_gauges_table("path/to/gauges.geojson")
         >>> Calib.hm_gauges
         >>>     gid  ...                         geometry
         >>> 0   149  ...  POINT (4278240.426 2843958.864)
@@ -189,7 +189,7 @@ class Calibration(River):
         # sort the gauges table based on the reach
         self.hm_gauges.sort_values(by="id", inplace=True, ignore_index=True)
 
-    def getGauges(self, reach_id: int, gaugei: int = 0) -> DataFrame:
+    def get_gauges(self, reach_id: int, gaugei: int = 0) -> DataFrame:
         """Get gauges.
 
             get the id of the station for a given river reach.
@@ -228,7 +228,7 @@ class Calibration(River):
 
         # stationname, gaugename, gaugexs
 
-    def readObservedWL(
+    def read_observed_wl(
         self,
         path: str,
         start: Union[str, dt.datetime],
@@ -368,7 +368,7 @@ class Calibration(River):
     #     Gauges.index = ind
     #     del Gauges[0]
 
-    def readObservedQ(
+    def read_observed_q(
         self,
         path: str,
         start: Union[str, dt.datetime],
@@ -416,8 +416,8 @@ class Calibration(River):
             end = dt.datetime.strptime(end, fmt)
 
         ind = pd.date_range(start, end)
-        Gauges = pd.DataFrame(index=ind)
-        Gauges.loc[:, 0] = ind
+        gauges = pd.DataFrame(index=ind)
+        gauges.loc[:, 0] = ind
         logger.debug("Reading discharge gauges data")
         for i in range(len(self.hm_gauges)):
             if self.hm_gauges.loc[i, "discharge"] == 1:
@@ -443,11 +443,11 @@ class Calibration(River):
                 f = f.rename(columns={1: name})
 
                 # use merge as there are some gaps in the middle
-                Gauges = Gauges.merge(f, on=0, how="left", sort=False)
+                gauges = gauges.merge(f, on=0, how="left", sort=False)
 
-        Gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
-        Gauges.index = ind
-        del Gauges[0]
+        gauges.replace(to_replace=np.nan, value=novalue, inplace=True)
+        gauges.index = ind
+        del gauges[0]
         # try:
         #     q_gauges.loc[:, int(name)] = np.loadtxt(
         #         path + str(int(name)) + file_extension
@@ -459,7 +459,7 @@ class Calibration(River):
         #     return
         # name = self.hm_gauges.loc[i, column]
 
-        self.q_gauges = Gauges
+        self.q_gauges = gauges
         self.hm_gauges["Qstart"] = 0
         self.hm_gauges["Qend"] = 0
 
@@ -471,7 +471,7 @@ class Calibration(River):
                 self.hm_gauges.loc[i, "Qstart"] = st1
                 self.hm_gauges.loc[i, "Qend"] = end1
 
-    def readRRM(
+    def read_rrm(
         self,
         path: str,
         fromday: Union[str, int] = "",
@@ -592,7 +592,7 @@ class Calibration(River):
             self.q_rrm.index = pd.date_range(start, end, freq="D")
             self.QRRM2.index = pd.date_range(start, end, freq="D")
 
-    def readHMQ(
+    def read_hm_discharge(
         self,
         path: str,
         from_day: Union[str, int] = "",
@@ -707,7 +707,7 @@ class Calibration(River):
 
         self.q_hm.index = pd.date_range(start, end, freq="D")
 
-    def readHMWL(
+    def read_hm_water_level(
         self,
         path: str,
         from_day: Union[str, int] = "",
@@ -795,7 +795,7 @@ class Calibration(River):
 
         self.wl_hm.index = pd.date_range(start, end, freq="D")
 
-    def readCalirationResult(self, reach_id: int, path: str = ""):
+    def read_caliration_result(self, reach_id: int, path: str = ""):
         """ReadCalirationResult.
 
         ReadCalirationResult method reads the 1D results and fill the missing
@@ -837,7 +837,7 @@ class Calibration(River):
         self.CalibrationQ[reach_id] = q[1].resample("D").mean()
         self.CalibrationWL[reach_id] = wl[1].resample("D").mean()
 
-    def getAnnualMax(
+    def get_annual_max(
         self, option=1, CorespondingTo=dict(MaxObserved=" ", TimeWindow=0)
     ):
         """getAnnualMax.
@@ -1107,7 +1107,7 @@ class Calibration(River):
         else:
             self.annual_max_hm_wl = AnnualMax
 
-    def calculateProfile(
+    def calculate_profile(
         self, reachi: int, BedlevelDS: float, Manning: float, BC_slope: float
     ):
         """CalculateProfile.
@@ -1172,7 +1172,7 @@ class Calibration(River):
         except AttributeError:
             logger.debug(f"The Given river reach- {reachi} does not have a slope")
 
-    def getReach(self, reach_id: int) -> DataFrame:
+    def get_reach(self, reach_id: int) -> DataFrame:
         """Get Reach cross section data.
 
         Parameters
@@ -1190,7 +1190,7 @@ class Calibration(River):
             .reset_index()
         )
 
-    def updateReach(self, reach: DataFrame):
+    def update_reach(self, reach: DataFrame):
         """Update the cross section of a given reach in the cross_sections attributes.
 
         Parameters
@@ -1240,7 +1240,7 @@ class Calibration(River):
 
         return smoothed
 
-    def smoothBedLevel(self, reach_id: int, window: int = 3):
+    def smooth_bed_level(self, reach_id: int, window: int = 3):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1261,7 +1261,7 @@ class Calibration(River):
         if not hasattr(self, "cross_sections"):
             raise ValueError("Please read the cross section first")
 
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
         reach["glnew"] = self._smooth(reach["gl"], window=window)
         # calculate the difference in the bed level and take it from
         # the bankfull_depth depth
@@ -1270,9 +1270,9 @@ class Calibration(River):
         reach.loc[:, "gl"] = reach.loc[:, "glnew"]
         reach.drop(labels=["glnew", "diff"], axis=1, inplace=True)
 
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def smoothDikeLevel(self, reach_id: int, window: int = 3):
+    def smooth_dike_level(self, reach_id: int, window: int = 3):
         """smoothBedLevel.
 
             SmoothBedLevel method smoothes the bed level of a given reach ID by
@@ -1293,12 +1293,12 @@ class Calibration(River):
         if not hasattr(self, "cross_sections"):
             raise ValueError("Please read the cross section first")
 
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
         reach["zl"] = self._smooth(reach["zl"], window=window)
         reach["zr"] = self._smooth(reach["zr"], window=window)
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def smoothBankLevel(self, reach_id: int, window: int = 3):
+    def smooth_bank_level(self, reach_id: int, window: int = 3):
         """SmoothBankLevel.
 
         SmoothBankLevel method smoothes the bankfull depth for a given reach
@@ -1319,7 +1319,7 @@ class Calibration(River):
             self.cross_sections.loc[:, "dbf"] + self.cross_sections.loc[:, "gl"]
         )
 
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
         reach["banklevelnew"] = self._smooth(reach["banklevel"], window=window)
 
         reach.loc[:, "diff"] = reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
@@ -1327,9 +1327,9 @@ class Calibration(River):
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
         reach.drop(labels=["banklevel"], axis=1, inplace=True)
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def smoothFloodplainHeight(self, reach_id: int, window: int = 3):
+    def smooth_floodplain_height(self, reach_id: int, window: int = 3):
         """SmoothFloodplainHeight.
 
         SmoothFloodplainHeight method smoothes the Floodplain Height the
@@ -1358,7 +1358,7 @@ class Calibration(River):
             self.cross_sections.loc[:, "hr"] + self.cross_sections.loc[:, "banklevel"]
         )
 
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
 
         reach["fplnew"] = self._smooth(reach["fpl"], window=window)
         reach["fprnew"] = self._smooth(reach["fpr"], window=window)
@@ -1369,12 +1369,12 @@ class Calibration(River):
         reach.loc[:, "hl"] = reach.loc[:, "hl"] + reach.loc[:, "diff0"]
         reach.loc[:, "hr"] = reach.loc[:, "hr"] + reach.loc[:, "diff1"]
 
-        self.updateReach(reach)
+        self.update_reach(reach)
         self.cross_sections.drop(
             labels=["banklevel", "fpr", "fpl"], axis=1, inplace=True
         )
 
-    def smoothBedWidth(self, reach_id: int, window: int = 3):
+    def smooth_bed_width(self, reach_id: int, window: int = 3):
         """SmoothBedWidth.
 
         SmoothBedWidth method smoothes the Bed Width the in the cross section
@@ -1392,11 +1392,11 @@ class Calibration(River):
         cross_sections: [dataframe attribute]
             the "b" column in the cross_sections attribute will be smoothed
         """
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
         reach["n"] = self._smooth(reach["b"], window=window)
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def downWardBedLevel(self, reach_id: int, height: Union[int, float]):
+    def downward_bed_level(self, reach_id: int, height: Union[int, float]):
         """downWardBedLevel.
 
         lowering the bed level by a certain height (5 cm)
@@ -1413,15 +1413,15 @@ class Calibration(River):
         cross_sections: [dataframe attribute]
             the "b" column in the cross_sections attribute will be smoothed
         """
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
 
         for j in range(1, len(reach)):
             if reach.loc[j - 1, "gl"] - reach.loc[j, "gl"] < height:
                 reach.loc[j, "gl"] = reach.loc[j - 1, "gl"] - height
 
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def smoothMaxSlope(self, reach_id: int, SlopePercentThreshold=1.5):
+    def smooth_max_slope(self, reach_id: int, SlopePercentThreshold=1.5):
         """SmoothMaxSlope.
 
         SmoothMaxSlope method smoothes the bed level the in the cross section
@@ -1461,7 +1461,7 @@ class Calibration(River):
         cross_sections: [dataframe attribute]
             the "gl" column in the cross_sections attribute will be smoothed
         """
-        reach = self.getReach(reach_id)
+        reach = self.get_reach(reach_id)
         # slope must be positive due to the smoothing
         slopes = [
             (reach.loc[k, "gl"] - reach.loc[k + 1, "gl"]) / 500
@@ -1493,9 +1493,9 @@ class Calibration(River):
                     for k in range(len(slopes) - 1)
                 ]
 
-        self.updateReach(reach)
+        self.update_reach(reach)
 
-    def checkFloodplain(self):
+    def check_floodplain(self):
         """CheckFloodplain.
 
         CheckFloodplain method check if the dike levels is higher than the
@@ -1533,7 +1533,7 @@ class Calibration(River):
                 )
 
     @staticmethod
-    def Metrics(
+    def metrics(
         df1: DataFrame,
         df2: DataFrame,
         gauges: list,
@@ -1615,7 +1615,7 @@ class Calibration(River):
 
         return Metrics
 
-    def HMvsRRM(
+    def hm_vs_rrm(
         self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
         """HMvsRRM.
@@ -1659,7 +1659,7 @@ class Calibration(River):
         if not isinstance(self.q_hm, DataFrame):
             raise ValueError("please read the HM results with the 'ReadHMQ' method")
         ### HM vs RRM
-        self.metrics_hm_vs_rrm = self.Metrics(
+        self.metrics_hm_vs_rrm = self.metrics(
             self.q_rrm, self.q_hm, self.rrm_gauges, self.novalue, start, end, shift, fmt
         )
         # get the point geometry from the hm_gauges
@@ -1675,7 +1675,7 @@ class Calibration(River):
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.metrics_hm_vs_rrm.crs = self.hm_gauges.crs
 
-    def RRMvsObserved(
+    def rrm_vs_observed(
         self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d", shift: int = 0
     ):
         """RRM_vs_observed.
@@ -1717,7 +1717,7 @@ class Calibration(River):
             )
 
         # RRM vs observed
-        self.metrics_rrm_vs_obs = self.Metrics(
+        self.metrics_rrm_vs_obs = self.metrics(
             self.q_gauges,
             self.q_rrm,
             self.rrm_gauges,
@@ -1741,7 +1741,7 @@ class Calibration(River):
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.metrics_rrm_vs_obs.crs = self.hm_gauges.crs
 
-    def HMQvsObserved(
+    def hm_vs_observed_discharge(
         self,
         start: str = "",
         end: str = "",
@@ -1785,7 +1785,7 @@ class Calibration(River):
             )
 
         ### HM Q vs observed
-        self.metrics_hm_q_vs_obs = self.Metrics(
+        self.metrics_hm_q_vs_obs = self.metrics(
             self.q_gauges,
             self.q_hm,
             self.QgaugesList,
@@ -1809,7 +1809,7 @@ class Calibration(River):
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.metrics_hm_q_vs_obs.crs = self.hm_gauges.crs
 
-    def HMWLvsObserved(
+    def hm_vs_observed_water_level(
         self,
         start: str = "",
         end: str = "",
@@ -1853,7 +1853,7 @@ class Calibration(River):
             )
 
         ### HM WL vs observed
-        self.metrics_hm_wl_vs_obs = self.Metrics(
+        self.metrics_hm_wl_vs_obs = self.metrics(
             self.wl_gauges,
             self.wl_hm,
             self.wl_gauges_list,
@@ -1877,7 +1877,7 @@ class Calibration(River):
         if isinstance(self.hm_gauges, GeoDataFrame):
             self.metrics_hm_wl_vs_obs.crs = self.hm_gauges.crs
 
-    def InspectGauge(
+    def Inspect_gauge(
         self,
         reach_id: int,
         gaugei: int = 0,
@@ -1917,7 +1917,7 @@ class Calibration(River):
                 "please calculate first the metrics_hm_vs_rrm by the method HMvsRRM"
             )
 
-        gauge = self.getGauges(reach_id, gaugei)
+        gauge = self.get_gauges(reach_id, gaugei)
         gauge_id = gauge.loc[0, self.gauge_id_col]
         gaugename = str(gauge.loc[0, "name"])
 
@@ -2012,7 +2012,7 @@ class Calibration(River):
             return summary, fig, ax1
 
     @staticmethod
-    def prepareToSave(df: DataFrame) -> DataFrame:
+    def prepare_to_save(df: DataFrame) -> DataFrame:
         """PrepareToSave.
 
             PrepareToSave convert all the dates in the dataframe into string
@@ -2053,7 +2053,7 @@ class Calibration(River):
                     )
         return df
 
-    def saveMetices(self, path):
+    def save_metices(self, path):
         """SaveMetices.
 
             SaveMetices saves the calculated metrics
@@ -2069,7 +2069,7 @@ class Calibration(River):
         if isinstance(self.metrics_hm_vs_rrm, GeoDataFrame) or isinstance(
             self.metrics_hm_vs_rrm, DataFrame
         ):
-            df = self.prepareToSave(self.metrics_hm_vs_rrm.copy())
+            df = self.prepare_to_save(self.metrics_hm_vs_rrm.copy())
             if isinstance(self.metrics_hm_vs_rrm, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_RRM.geojson", driver="GeoJSON")
             if isinstance(self.metrics_hm_vs_rrm, DataFrame):
@@ -2078,7 +2078,7 @@ class Calibration(River):
         if isinstance(self.metrics_hm_q_vs_obs, GeoDataFrame) or isinstance(
             self.metrics_hm_q_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.metrics_hm_q_vs_obs.copy())
+            df = self.prepare_to_save(self.metrics_hm_q_vs_obs.copy())
             if isinstance(self.metrics_hm_q_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.metrics_hm_q_vs_obs, DataFrame):
@@ -2087,7 +2087,7 @@ class Calibration(River):
         if isinstance(self.metrics_rrm_vs_obs, GeoDataFrame) or isinstance(
             self.metrics_rrm_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.metrics_rrm_vs_obs.copy())
+            df = self.prepare_to_save(self.metrics_rrm_vs_obs.copy())
             if isinstance(self.metrics_rrm_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsRRM_Q_Obs.geojson", driver="GeoJSON")
             if isinstance(self.metrics_rrm_vs_obs, DataFrame):
@@ -2096,7 +2096,7 @@ class Calibration(River):
         if isinstance(self.metrics_hm_wl_vs_obs, GeoDataFrame) or isinstance(
             self.metrics_hm_wl_vs_obs, DataFrame
         ):
-            df = self.prepareToSave(self.metrics_hm_wl_vs_obs.copy())
+            df = self.prepare_to_save(self.metrics_hm_wl_vs_obs.copy())
             if isinstance(self.metrics_hm_wl_vs_obs, GeoDataFrame):
                 df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
             if isinstance(self.metrics_hm_wl_vs_obs, DataFrame):

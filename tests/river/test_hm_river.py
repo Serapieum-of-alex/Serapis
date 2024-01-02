@@ -493,8 +493,8 @@ def test_PlotQ(
     segment3_specificxs_plot: int,
 ):
     Calib = rc.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedQ(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
@@ -561,8 +561,8 @@ def test_CalculateQMetrics(
     segment3: int,
 ):
     Calib = rc.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedQ(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_q(
         ReadObservedQ_Path,
         dates[0],
         dates[1],
@@ -638,8 +638,8 @@ def test_PlotWL(
     read_1d_result_path: str,
 ):
     Calib = rc.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
@@ -681,8 +681,8 @@ def test_CalculateWLMetrics(
     segment3: int,
 ):
     Calib = rc.Calibration("HM", version=version)
-    Calib.readGaugesTable(gauges_table_path)
-    Calib.readObservedWL(
+    Calib.read_gauges_table(gauges_table_path)
+    Calib.read_observed_wl(
         ReadObservedWL_Path,
         dates[0],
         dates[1],
