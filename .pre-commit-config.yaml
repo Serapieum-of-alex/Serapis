@@ -64,13 +64,8 @@ repos:
         name: "[py   - check] flake8"
 #        language_version: python3.9
         exclude: ^(examples/|tests/)
-
-  #- repo: https://github.com/psf/black
-  #  rev: 22.8.0
-  #  hooks:
-  #    - id: black
   - repo: https://github.com/ambv/black
-    rev: 23.11.0
+    rev: 23.12.1
     hooks:
       - id: black
         name: "[py   - format] black"
