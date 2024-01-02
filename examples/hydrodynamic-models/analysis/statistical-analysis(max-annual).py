@@ -30,13 +30,13 @@ Calib = RC.Calibration("HM", 3, gauge_id_col="id")
 Rhine = R.River("HM")
 Rhine.statistical_properties(
     hm_path + "/Statistical analysis/" + "distribution-properties.csv",
-    distibution="Gumbel",
+    distribution="Gumbel",
 )
 
 Rhine_obs = R.River("Observed")
 Rhine_obs.statistical_properties(
     observed_path + "/Statistical analysis/" + "distribution-properties.csv",
-    distibution="Gumbel",
+    distribution="Gumbel",
 )
 # %% read the discharge data to get the max annual values
 Calib.readGaugesTable(gauges_files)

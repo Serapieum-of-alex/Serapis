@@ -1713,7 +1713,7 @@ class River:
         self.US = []
         self.trace2(sub_id, self.US)
 
-    def statistical_properties(self, path: str, distibution: str = "GEV"):
+    def statistical_properties(self, path: str, distribution: str = "GEV"):
         """StatisticalProperties.
 
             StatisticalProperties method reads the parameters of the distribution and calculates the 2, 5, 10, 15,
@@ -1731,7 +1731,7 @@ class River:
             >>> 23800500,0.0217,304.8785,120.0510,0.0820,0.9878
             >>> 23800690,0.0215,455.4108,193.4242,0.0656,0.9996
 
-        distibution: [str]
+        distribution: [str]
             The distribution used to fit the data. Default is "GEV".
 
         Returns
@@ -1754,7 +1754,7 @@ class River:
         3        23700200  0.1695  2886.8037   900.1678    0.0820   0.9878
         """
         self.SP = pd.read_csv(path, delimiter=",")
-        # calculate the 2, 5, 10, 15, 20 return period discharge.
+        # calculate the 2, 5, 10, 15, 20 return period discharges.
         T = np.array([2, 5, 10, 15, 20, 50, 100, 200, 500, 1000, 5000])
         self.SP = self.SP.assign(
             RP2=0,
@@ -1773,7 +1773,7 @@ class River:
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
                 col1 = self.SP.columns.to_list().index("RP2")
-                if distibution == "GEV":
+                if distribution == "GEV":
                     dist = GEV()
                     parameters = {
                         "shape": self.SP.loc[i, "c"],
@@ -1900,7 +1900,7 @@ class River:
     def get_bankfull_depth(self, function: Callable, column_name: str):
         """GetBankfullDepth.
 
-            get_bankfull_depth method takes a function that calculates the bankful depth as a function of bankful
+            get_bankfull_depth method takes a function that calculates the bankfull_depth depth as a function of bankfull_depth
             width and calculates the depth.
 
         Parameters
@@ -1998,20 +1998,20 @@ class River:
             else:
                 # the lowest dike.
                 # get the vortices of the cross-sections.
-                H = self.cross_sections.loc[i, ["zl", "zr"]].min()
-                Hl, Hr, Bl, Br, B, dbf = self.cross_sections.loc[
+                h = self.cross_sections.loc[i, ["zl", "zr"]].min()
+                hl, hr, bl, br, b, dbf = self.cross_sections.loc[
                     i, ["hl", "hr", "bl", "br", "b", "dbf"]
                 ].tolist()
-                BedLevel = self.cross_sections.loc[i, "gl"]
-                Coords = self.get_vortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
+                bed_level = self.cross_sections.loc[i, "gl"]
+                coords = self.get_vortices(h - bed_level, hl, hr, bl, br, b, dbf)
                 # get the area and perimeters
-                Area, Perimeter = self.polygon_geometry(Coords)
-                # self.cross_sections.loc[i,'Area'] = Area
-                # self.cross_sections.loc[i,'Perimeter'] = Perimeter
+                area, perimeter = self.polygon_geometry(coords)
+                # self.cross_sections.loc[i,'area'] = area
+                # self.cross_sections.loc[i,'perimeter'] = perimeter
                 self.cross_sections.loc[i, column_name] = (
                     (1 / self.cross_sections.loc[i, "m"])
-                    * Area
-                    * ((Area / Perimeter) ** (2 / 3))
+                    * area
+                    * ((area / perimeter) ** (2 / 3))
                 )
                 self.cross_sections.loc[i, column_name] = self.cross_sections.loc[
                     i, column_name
@@ -2020,39 +2020,41 @@ class River:
             if isinstance(self.SP, DataFrame):
                 if "gauge" not in self.cross_sections.columns.tolist():
                     raise ValueError(
-                        "To calculate the return period for each cross-section a column with "
-                        "the coresponding gauge id should be in the cross-section file"
+                        "To calculate the return period for each cross-section, a column with "
+                        "the coresponding gauge-id should be in the cross-section file"
                     )
-                RP = self.get_return_period(
+                rp = self.get_return_period(
                     self.cross_sections.loc[i, "gauge"],
                     self.cross_sections.loc[i, column_name],
                     distribution=distribution,
                 )
-                if np.isnan(RP):
-                    RP = -1
-                self.cross_sections.loc[i, column_name + "RP"] = round(RP, 2)
+                if np.isnan(rp):
+                    rp = -1
+                self.cross_sections.loc[i, column_name + "RP"] = round(rp, 2)
 
-    def calibrate_dike(self, ObjectiveRP: Union[str, int], CurrentRP: Union[str, int]):
-        """CalibrateDike.
+    def calibrate_dike(
+        self,
+        objective_return_period: Union[str, int],
+        current_return_period: Union[str, int],
+    ):
+        """calibrate_dike.
 
-            CalibrateDike method takes cross section and based on a given return period
+            calibrate_dike method takes cross-section, and based on a given return period, it calcultes a new dimension.
 
         Parameters
         ----------
-        ObjectiveRP : [string]
-            Column name in the cross section dataframe you have to enter it.
-        CurrentRP : [string]
-            Column name in the cross section dataframe created by the GetCapacity
-            method.
+        objective_return_period: [string]
+            Column name in the cross-section dataframe you have to enter it.
+        current_return_period: [string]
+            Column name in the cross-section dataframe created by the GetCapacity method.
 
         Returns
         -------
-        New RP: [data frame column]
-            column in the cross section dataframe containing the new return period.
+        New rp: [data frame column]
+            column in the cross-section dataframe containing the new return period.
         New Capacity: [data frame column]
-            column in the cross section dataframe containing the the discharge enough
-            to fill the cross section after raising the dikes to the objective
-            return period.
+            column in the cross-section dataframe containing the enough discharge to fill the cross-section after
+            raising the dikes to the objective return period.
         """
         if not isinstance(self.SP, DataFrame):
             raise TypeError(
@@ -2061,18 +2063,18 @@ class River:
 
         if not isinstance(self.cross_sections, DataFrame):
             raise TypeError(
-                "please read the cross section data first with the method CrossSections"
+                "please read the cross-section data first with the method CrossSections"
             )
 
-        if CurrentRP not in self.cross_sections.columns:
+        if current_return_period not in self.cross_sections.columns:
             raise ValueError(
-                f"{CurrentRP} in not in the cross section data please use GetCapacity method to "
-                f"calculate the current return perion"
+                f"{current_return_period} in not in the cross section data please use GetCapacity method to "
+                f"calculate the current return period"
             )
 
-        if ObjectiveRP not in self.cross_sections.columns:
+        if objective_return_period not in self.cross_sections.columns:
             raise ValueError(
-                f"{ObjectiveRP} in not in the cross section data please create a column in the cross "
+                f"{objective_return_period} in not in the cross-section data please create a column in the cross "
                 "section data containing the objective return period"
             )
 
@@ -2094,32 +2096,34 @@ class River:
                     / self.dx
                 )
             # self.cross_sections.loc[i,'Slope'] = slope
-            Hl, Hr, Bl, Br, B, dbf = self.cross_sections.loc[
+            hl, hr, bl, br, b, dbf = self.cross_sections.loc[
                 i, ["hl", "hr", "bl", "br", "b", "dbf"]
             ].tolist()
-            BedLevel = self.cross_sections.loc[i, "gl"]
+            bed_level = self.cross_sections.loc[i, "gl"]
 
             # compare the current return period with the desired return period.
             if (
-                self.cross_sections.loc[i, CurrentRP]
-                < self.cross_sections.loc[i, ObjectiveRP]
-                and self.cross_sections.loc[i, CurrentRP] != -1
+                self.cross_sections.loc[i, current_return_period]
+                < self.cross_sections.loc[i, objective_return_period]
+                and self.cross_sections.loc[i, current_return_period] != -1
             ):
                 logger.debug("XS-" + str(self.cross_sections.loc[i, "xsid"]))
-                logger.debug("Old RP = " + str(self.cross_sections.loc[i, CurrentRP]))
                 logger.debug(
-                    "Old H = " + str(self.cross_sections.loc[i, ["zl", "zr"]].min())
+                    "Old rp = " + str(self.cross_sections.loc[i, current_return_period])
+                )
+                logger.debug(
+                    "Old h = " + str(self.cross_sections.loc[i, ["zl", "zr"]].min())
                 )
 
-                self.cross_sections.loc[i, "New RP"] = self.cross_sections.loc[
-                    i, CurrentRP
+                self.cross_sections.loc[i, "New rp"] = self.cross_sections.loc[
+                    i, current_return_period
                 ]
 
                 while (
-                    self.cross_sections.loc[i, "New RP"]
-                    < self.cross_sections.loc[i, ObjectiveRP]
+                    self.cross_sections.loc[i, "New rp"]
+                    < self.cross_sections.loc[i, objective_return_period]
                 ):
-                    # get the vortices of the cross sections
+                    # get the vortices of the cross-sections
                     if (
                         self.cross_sections.loc[i, "zlnew"]
                         < self.cross_sections.loc[i, "zrnew"]
@@ -2132,56 +2136,53 @@ class River:
                             self.cross_sections.loc[i, "zrnew"] + 0.1
                         )
 
-                    H = self.cross_sections.loc[i, ["zlnew", "zrnew"]].min()
-                    Coords = self.get_vortices(H - BedLevel, Hl, Hr, Bl, Br, B, dbf)
+                    h = self.cross_sections.loc[i, ["zlnew", "zrnew"]].min()
+                    coords = self.get_vortices(h - bed_level, hl, hr, bl, br, b, dbf)
                     # get the area and perimeters
-                    Area, Perimeter = self.polygon_geometry(Coords)
+                    area, perimeter = self.polygon_geometry(coords)
                     self.cross_sections.loc[i, "New Capacity"] = (
                         (1 / self.cross_sections.loc[i, "m"])
-                        * Area
-                        * ((Area / Perimeter) ** (2 / 3))
+                        * area
+                        * ((area / perimeter) ** (2 / 3))
                     )
                     self.cross_sections.loc[
                         i, "New Capacity"
                     ] = self.cross_sections.loc[i, "New Capacity"] * slope ** (1 / 2)
 
-                    RP = self.get_return_period(
+                    rp = self.get_return_period(
                         self.cross_sections.loc[i, "gauge"],
                         self.cross_sections.loc[i, "New Capacity"],
                     )
 
-                    self.cross_sections.loc[i, "New RP"] = round(RP, 2)
+                    self.cross_sections.loc[i, "New rp"] = round(rp, 2)
 
-                logger.info(f"New RP = {round(RP, 2)}")
-                logger.info(f"New H = {round(H, 2)}")
+                logger.info(f"New rp = {round(rp, 2)}")
+                logger.info(f"New h = {round(h, 2)}")
                 logger.info("---------------------------")
 
     def parse_overtopping(
         self, overtopping_result_path: str = None, delimiter: str = r"\s+"
     ):
-        r"""Overtopping.
+        r"""parse_overtopping.
 
-        Overtopping method reads the overtopping files and for each cross section
-        in each sub-basin it will strore the days where overtopping happens
-        in this cross section.
+            Overtopping method reads the overtopping files, and for each cross-section in each sub-basin it will
+            strore the days where overtopping happens in this cross-section.
 
-        you do not need to delete empty files or anything just give the code
-        the sufix you used for the left overtopping file and the sufix you used
-        for the right overtopping file
+            you do not need to delete empty files or anything just give the code the sufix you used for the left
+            overtopping file and the sufix you used for the right overtopping file.
 
         Parameters
         ----------
         overtopping_result_path: [str]
-            a path to the folder includng 2D results.
+            a path to the folder including 2D results.
         delimiter: [str]
             Default is r"\s+".
 
         Returns
         -------
-        overtopping_reaches_left : [dictionary attribute]
-            dictionary having sub-basin ids as a key and for each sub-basins
-            it contains dictionary for each cross section having the days of
-            overtopping.
+        overtopping_reaches_left: [dictionary attribute]
+            dictionary having sub-basin ids as a key, and for each sub-basin, it contains dictionary for each cross-
+            section having the days of overtopping.
             {reach_1: {xs_1: [day1, day2, ....]}}
             >>> {
             >>>     '10': {
@@ -2198,14 +2199,13 @@ class River:
             >>>     '15': {18153: [8200, 8201, 8199]
             >>> }
         overtopping_reaches_right : [dictionary attribute]
-            dictionary having sub-basin ids as a key and for each sub-basins
-            it contains dictionary for each cross section having the days of
-            overtopping.
+            dictionary having sub-basin ids as a key and for each sub-basins, it contains dictionary for each
+            cross-section having the days of overtopping.
         """
         # sort files
         left_overtopping = list()
         right_overtopping = list()
-        # get names of files that has _left or _right at its end
+        # get names of files that have _left or _right at its end
         if overtopping_result_path is None:
             overtopping_result_path = self.one_d_result_path
 
@@ -2219,31 +2219,31 @@ class River:
         # two dictionaries for overtopping left and right
         overtopping_subs_left = dict()
         overtopping_subs_right = dict()
-        # the _left and _right files has all the overtopping discharge
-        # but sometimes the sum of all the overtopping is less than a threshold specified
-        # and then the 2D  algorithm does not run so these cross sections you will not find
-        # any inundation beside it in the maps but you will find it in the _left or _right maps
+        # the _left and _right files has all the overtopping discharge.
+        # but sometimes the sum of all the overtopping is less than a threshold specified.
+        # and then the 2D algorithm does not run, so these cross sections you will not find
+        # any inundation beside it in the maps, but you will find it in the _left or _right maps
 
         # for each sub-basin that has overtopping from the left dike
         for i in range(len(left_overtopping)):
-            # open the file (if there is no column sthe file is empty)
+            # open the file (if there are no columns, the file is empty)
             data = pd.read_csv(
                 rf"{overtopping_result_path}/{left_overtopping[i]}",
                 header=None,
                 delimiter=delimiter,
             )
-            # add the sub basin to the overtopping dictionary of sub-basins
+            # add the sub-basin to the overtopping dictionary of sub-basins
             overtopping_subs_left[
                 left_overtopping[i][: -len(self.left_overtopping_suffix)]
             ] = dict()
 
             # get the XS that overtopping happened from
-            XSs = list(set(data.loc[:, 2]))
+            xs = list(set(data.loc[:, 2]))
             # for each XS get the days
-            for j in range(len(XSs)):
+            for j in range(len(xs)):
                 overtopping_subs_left[
                     left_overtopping[i][: -len(self.left_overtopping_suffix)]
-                ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
+                ][xs[j]] = list(set(data[0][data[2] == xs[j]].tolist()))
 
         for i in range(len(right_overtopping)):
             data = pd.read_csv(
@@ -2251,18 +2251,18 @@ class River:
                 header=None,
                 delimiter=delimiter,
             )
-            # add the sub basin to the overtopping dictionary of sub-basins
+            # add the sub-basin to the overtopping dictionary of sub-basins
             overtopping_subs_right[
                 right_overtopping[i][: -len(self.right_overtopping_suffix)]
             ] = dict()
 
             # get the XS that overtopping happened from
-            XSs = list(set(data.loc[:, 2]))
+            xs = list(set(data.loc[:, 2]))
             # for each XS get the days
-            for j in range(len(XSs)):
+            for j in range(len(xs)):
                 overtopping_subs_right[
                     right_overtopping[i][: -len(self.right_overtopping_suffix)]
-                ][XSs[j]] = list(set(data[0][data[2] == XSs[j]].tolist()))
+                ][xs[j]] = list(set(data[0][data[2] == xs[j]].tolist()))
 
         self.overtopping_reaches_left = overtopping_subs_left
         self.overtopping_reaches_right = overtopping_subs_right
@@ -2272,25 +2272,25 @@ class River:
 
             - get_overtopped_xs method get the cross sections that was overtopped in a given date
             - you have to read the overtopping data first with the method parse_overtopping
-            - since inudation maps gets the max depth for the whole event the method can also trace the event back
+            - since inudation maps gets the max depth for the whole event, the method can also trace the event back
             to the beginning and get all the overtopped XS from the beginning of the Event till the given day
             - you have to give the River object the event_index attribute from the Event Object.
 
         Parameters
         ----------
-        day : [int]
-            the day you want to get the overtopped cross section for.
-        all_event_days : [Bool], optional
-            if you want to get the overtopped cross section for this day only or for the whole event. The default is
+        day: [int]
+            the day you want to get the overtopped cross-section for.
+        all_event_days: [Bool], optional
+            if you want to get the overtopped cross-section for this day only or for the whole event. The default is
             True.
-            - if True the function trace from the given day back till the beginning of the event.
+            - if True, the function traces from the given day back till the beginning of the event.
 
         Returns
         -------
         xs_left : [list]
-            list of cross section ids that has overtopping from the left bank.
+            list of cross-section ids that has overtopping from the left bank.
         xs_right : [list]
-            list of cross section ids that has overtopping from the right bank.
+            list of cross-section ids that has overtopping from the right bank.
 
         Example
         -------
@@ -2298,7 +2298,7 @@ class River:
         >>> river = River('Rhine')
         >>> river.Overtopping("/results/1d/")
         >>> day = 1122
-        >>> XSleft, XSright = river.get_overtopped_xs(day,False)
+        >>> xs_left, xs_right = river.get_overtopped_xs(day,False)
 
         - from the beginning of the event till the given day
         >>> river = River('Rhine')
@@ -2308,11 +2308,11 @@ class River:
         - give the event_index table to the River Object
         >>> river.event_index = river.event_index
         >>> day = 1122
-        >>> XSleft, XSright = river.get_overtopped_xs(day, False)
+        >>> xs_left, xs_right = river.get_overtopped_xs(day, False)
         """
         if not hasattr(self, "event_index"):
             raise ValueError(
-                "event_index does not exist please read the event_index first."
+                "event_index does not exist, please read the event_index first."
             )
 
         if all_event_days:
@@ -2322,7 +2322,7 @@ class River:
             event_days = self.event_index.loc[
                 self.event_index["index"] == ind, "id"
             ].values.tolist()
-            # as it might be gaps in the middle get the first and last day and generate list of all days.
+            # as there might be gaps in the middle, get the first and last day and generate a list of all days.
             event_days = list(range(event_days[0], event_days[-1] + 1))
         else:
             event_days = [day]
@@ -2333,17 +2333,17 @@ class River:
         for day_i in event_days:
             # for each river reach in the overtopping left dict
             for reach_i in self.overtopping_reaches_left.keys():
-                # get all cross section that overtopped before
-                XSs = list(self.overtopping_reaches_left[reach_i].keys())
-                # for each xross section check if the day is sored inside
-                for xs_i in XSs:
+                # get all cross-sections that were overtopped before.
+                xs = list(self.overtopping_reaches_left[reach_i].keys())
+                # for each cross-section check if the day is sored inside.
+                for xs_i in xs:
                     if day_i in self.overtopping_reaches_left[reach_i][xs_i]:
                         xs_left.append(xs_i)
 
             for reach_i in self.overtopping_reaches_right.keys():
-                XSs = list(self.overtopping_reaches_right[reach_i].keys())
+                xs = list(self.overtopping_reaches_right[reach_i].keys())
 
-                for xs_i in XSs:
+                for xs_i in xs:
                     if day_i in self.overtopping_reaches_right[reach_i][xs_i]:
                         xs_right.append(xs_i)
 
@@ -2353,17 +2353,18 @@ class River:
         return xs_left, xs_right
 
     def get_sub_basin(self, xsid: int):
-        """GetSubBasin.
+        """get_sub_basin.
 
-        GetSubBasin method returned the sub-basin that the Cross section belong
+            get_sub_basin method returns the sub-basin that the cross-section belongs to.
+
         Parameters
         ----------
-            1-xsid : [Integer]
-                cross section id.
+        xsid: [Integer]
+            cross-section id.
 
         Returns
         -------
-            [Integer]
+        Integer:
                 sub-basin id.
         """
         loc = np.where(self.cross_sections["xsid"] == xsid)[0][0]
@@ -2372,21 +2373,20 @@ class River:
     def get_flooded_reaches(
         self, overtopped_xs: List = None, day: List[int] = None, all_event_days=True
     ):
-        """GetFloodedSubs.
+        """get_flooded_reaches.
 
-            GetFloodedSubs gets the inundeated sub-basins
+            get_flooded_reaches gets the inundeated sub-basins.
 
         Parameters
         ----------
-        overtopped_xs : [list], optional
-            list of cross sections overtopped (if you already used the GetOvertoppedXS
-            method to get the overtopped XSs for a specific day).The default is [].
-            If entered the algorithm is not going to look at the over arguments
-            of the method.
-        day : [list], optional
+        overtopped_xs: [list], optional
+            list of cross-sections overtopped (if you already used the GetOvertoppedXS method to get the overtopped
+            XSs for a specific day). The default is []. If entered, the algorithm is not going to look at the over
+            arguments of the method.
+        day: [list], optional
             if you want to get the flooded subs for a specific list of days. The default is 1.
-        all_event_days : [Bool], optional in case user entered overtopped_xs
-            if the user entered day the all_event_days is a must. The default is True.
+        all_event_days: [Bool], optional in case user entered overtopped_xs
+            if the user entered day, the all_event_days should be given. The default is True.
 
         Returns
         -------
@@ -2400,8 +2400,8 @@ class River:
 
         - get the flooded subs from already obtained overtopped XSs
             >>> day = 1122
-            >>> XSleft, XSright = River.get_overtopped_xs(day, False)
-            >>> floodedSubs = River.get_flooded_reaches(overtopped_xs = XSleft + XSright, all_event_days=False)
+            >>> xs_left, xs_right = River.get_overtopped_xs(day, False)
+            >>> floodedSubs = River.get_flooded_reaches(overtopped_xs = xs_left + xs_right, all_event_days=False)
         """
         if overtopped_xs is None:
             overtopped_xs = []
@@ -2411,16 +2411,15 @@ class River:
                 )
 
         reaches = []
-        # if you already used the GetOvertoppedXS and have a list of xs overtopped
-        # at specific day
+        # if you already used the GetOvertoppedXS and have a list of xs overtopped at specific day.
         if len(overtopped_xs) > 0:
             overtopped_xs = list(set(overtopped_xs))
             for xs_i in overtopped_xs:
                 reaches.append(self.get_sub_basin(xs_i))
         else:
             for day_i in day:
-                XSLeft, XSRight = self.get_overtopped_xs(day_i, all_event_days)
-                overtopped_xs = XSLeft + XSRight
+                xs_left, xs_right = self.get_overtopped_xs(day_i, all_event_days)
+                overtopped_xs = xs_left + xs_right
                 overtopped_xs = list(set(overtopped_xs))
 
                 for xs_i in overtopped_xs:
@@ -2454,7 +2453,7 @@ class River:
             # get the days in the sub
             days = list(set(data.loc[:, 0]))
             for j, day_i in enumerate(event_days):
-                # check whether this sub basin has flooded in this particular day
+                # check whether this sub-basin has flooded in this particular day
                 if day_i in days:
                     # filter the dataframe to the discharge column (3) and the days
                     detailed_overtopping.loc[day_i, reach_i] = data.loc[
@@ -2468,26 +2467,24 @@ class River:
     def detailed_overtopping(
         self, flooded_reaches: List[int], event_days: List[int], delimiter: str = r"\s+"
     ):
-        r"""DetailedOvertopping.
+        r"""detailed_overtopping.
 
-        DetailedOvertopping method takes list of days and the flooded subs-basins
-        in those days and get the left and right overtopping for each sub-basin for
-        each day
+            detailed_overtopping method takes a list of days and the flooded subs-basins in those days and get the left
+            and right overtopping for each sub-basin for each day.
 
         Parameters
         ----------
         flooded_reaches : [list]
             list of sub-basins that are flooded during the given days.
         event_days : [list]
-            list od daysof an event.
+            list of days of an event.
         delimiter: str
             Delimiter used in the 1D result files. Default is r"\s+".
 
         Returns
         -------
-        detailed_overtopping_left : [dataframe attribute]
-            dataframe having for each day of the event the left overtopping
-            to each sub-basin.
+        detailed_overtopping_left: [dataframe attribute]
+            dataframe having for each day of the event the left overtopping to each sub-basin.
                          5       sum
             8195     892.0     892.0
             8196   20534.7   20534.7
@@ -2497,9 +2494,8 @@ class River:
             8200  123513.0  123513.0
             sum   439952.2       NaN
 
-        detailed_overtopping_right : [dataframe attribute]
-            dataframe having for each day of the event the right overtopping
-            to each sub-basin.
+        detailed_overtopping_right: [dataframe attribute]
+            dataframe having for each day of the event the right overtopping to each sub-basin.
         """
         self.detailed_overtopping_left = self._get_detailed_overtopping(
             flooded_reaches, event_days, left=True, delimiter=delimiter
@@ -2517,7 +2513,7 @@ class River:
             self.detailed_overtopping_right.loc[
                 day_i, "sum"
             ] = self.detailed_overtopping_right.loc[day_i, :].sum()
-        # sum overtopping for each sub basin
+        # sum overtopping for each subbasin.
         for j, reach_i in enumerate(flooded_reaches):
             self.detailed_overtopping_left.loc[
                 "sum", reach_i
@@ -2529,22 +2525,21 @@ class River:
         # self.detailed_overtopping_left.loc['sum','sum'] = self.detailed_overtopping_left.loc[:,'sum'].sum()
         # self.detailed_overtopping_right.loc['sum','sum'] = self.detailed_overtopping_right.loc[:,'sum'].sum()
 
-    def coordinates(self, Bankful=False):
-        """Coordinates.
+    def coordinates(self, bankfull_depth: bool = False):
+        """coordinates.
 
-        Coordinates method calculate the real coordinates for all the vortixes
-        of the cross section
+            the `coordinates` method calculates the real coordinates for all the Vortices of the cross-section.
 
         Parameters
         ----------
-        Bankful : [Bool], optional
-            if the cross section data has a bankful depth or not. The default is False.
+        bankfull_depth: [Bool], optional
+            if the cross-section data has a bankfull depth or not. The default is False.
 
         Returns
         -------
-        coordenates will be added to the "crosssection" attribute.
+        the coordenates will be added to the "cross_sections" attribute.
         """
-        if Bankful:
+        if bankfull_depth:
             self.cross_sections = self.cross_sections.assign(
                 x1=0,
                 y1=0,
@@ -2640,22 +2635,22 @@ class River:
     # def CreatePolygons(self):
 
     @staticmethod
-    def polygon_geometry(Coords):
+    def polygon_geometry(coordinates: np.ndarray):
         """PolygonGeometry.
 
-        PolygonGeometry method calculates the area and perimeter of some coordinates
+            PolygonGeometry method calculates the area and perimeter of some coordinates
 
         Parameters
         ----------
-            1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of points
+        coordinates: [array]
+            numpy array in the shape of (n*2) where n is the number of points.
 
         Returns
         -------
-            1-area : [float]
-                area between the coordinates.
-            2-peri : [float]
-                perimeter between the coordinates.
+        area: [float]
+            area between the coordinates.
+        peri: [float]
+            perimeter between the coordinates.
 
         Example
         -------
@@ -2664,41 +2659,44 @@ class River:
         """
         area = 0.0
         peri = 0.0
-        for i in range(np.shape(Coords)[0] - 1):
+        for i in range(np.shape(coordinates)[0] - 1):
             area = (
-                area + Coords[i, 0] * Coords[i + 1, 1] - Coords[i + 1, 0] * Coords[i, 1]
+                area
+                + coordinates[i, 0] * coordinates[i + 1, 1]
+                - coordinates[i + 1, 0] * coordinates[i, 1]
             )
             peri = (
                 peri
                 + (
-                    (Coords[i + 1, 0] - Coords[i, 0]) ** 2
-                    + (Coords[i + 1, 1] - Coords[i, 1]) ** 2
+                    (coordinates[i + 1, 0] - coordinates[i, 0]) ** 2
+                    + (coordinates[i + 1, 1] - coordinates[i, 1]) ** 2
                 )
                 ** 0.5
             )
+
         area = (
             area
-            + Coords[np.shape(Coords)[0] - 1, 0] * Coords[0, 1]
-            - Coords[0, 0] * Coords[np.shape(Coords)[0] - 1, 1]
+            + coordinates[np.shape(coordinates)[0] - 1, 0] * coordinates[0, 1]
+            - coordinates[0, 0] * coordinates[np.shape(coordinates)[0] - 1, 1]
         )
         area = area * 0.5
 
         return area, peri
 
     @staticmethod
-    def poly_area(Coords):
-        """PolyArea.
+    def poly_area(coordinates: np.ndarray):
+        """poly_area.
 
-        PolyArea method calculates the the area between given coordinates
+            poly_area method calculates the area between given coordinates.
 
         Parameters
         ----------
-        Coords : [array]
-            numpy array in the shape of (n*2) where n is the number of points
+        coordinates: [array]
+            numpy array in the shape of (n*2) where n is the number of points.
 
         Returns
         -------
-        area : [float]
+        area: [float]
             area between the coordinates.
 
         Example:
@@ -2706,51 +2704,48 @@ class River:
         coords = np.array([[0,1],[0,0],[5,0],[5,1]])
         River.PolyArea(coords)
         """
-        Coords = np.array(Coords)
+        coordinates = np.array(coordinates)
         area = 0.0
-        for i in range(np.shape(Coords)[0] - 1):
-            # cros multiplication
+        for i in range(np.shape(coordinates)[0] - 1):
+            # cross multiplication
             area = (
-                area + Coords[i, 0] * Coords[i + 1, 1] - Coords[i + 1, 0] * Coords[i, 1]
+                area
+                + coordinates[i, 0] * coordinates[i + 1, 1]
+                - coordinates[i + 1, 0] * coordinates[i, 1]
             )
         area = (
             area
-            + Coords[np.shape(Coords)[0] - 1, 0] * Coords[0, 1]
-            - Coords[0, 0] * Coords[np.shape(Coords)[0] - 1, 1]
+            + coordinates[np.shape(coordinates)[0] - 1, 0] * coordinates[0, 1]
+            - coordinates[0, 0] * coordinates[np.shape(coordinates)[0] - 1, 1]
         )
         area = area * 0.5
 
         return area
 
     @staticmethod
-    def poly_perimeter(Coords):
-        """PolyPerimeter.
+    def poly_perimeter(coordinates: np.ndarray):
+        """poly_perimeter.
 
-        PolyPerimeter method calculates the the perimeter between given coordinates
+            poly_perimeter method calculates the perimeter between given coordinates.
 
         Parameters
         ----------
-            1-Coords : [array]
-                numpy array in the shape of (n*2) where n is the number of points
+        coordinates: [array]
+            numpy array in the shape of (n*2) where n is the number of points
 
         Returns
         -------
-            2-peri : [float]
-                perimeter between the coordinates.
-
-        Example
-        -------
-            coords = np.array([[0,1],[0,0],[5,0],[5,1]])
-            RV.River.PolyPerimeter(coords)
+        peri: [float]
+            perimeter between the coordinates.
         """
         peri = 0.0
-        for i in range(np.shape(Coords)[0] - 1):
+        for i in range(np.shape(coordinates)[0] - 1):
             # next point coord - current point coord
             peri = (
                 peri
                 + (
-                    (Coords[i + 1, 0] - Coords[i, 0]) ** 2
-                    + (Coords[i + 1, 1] - Coords[i, 1]) ** 2
+                    (coordinates[i + 1, 0] - coordinates[i, 0]) ** 2
+                    + (coordinates[i + 1, 1] - coordinates[i, 1]) ** 2
                 )
                 ** 0.5
             )
@@ -2758,120 +2753,120 @@ class River:
         return peri
 
     @staticmethod
-    def get_coordinates(XSGeometry, dbf):
-        """GetCoordinates.
+    def get_coordinates(xs_geometry, dbf):
+        """get_coordinates.
 
-        GetCoordinates calculates the coordinates of all the points (vortices)
-        of the cross section
+            get_coordinates calculates the coordinates of all the points (vortices) of the cross-section.
 
         Parameters
         ----------
-            1- BedLevel : [Float]
+        xs_geometry: [list]
+            1- bed_level: [Float]
                 DESCRIPTION.
-            2- BankLeftLevel : [Float]
+            2- bank_left_level: [Float]
                 DESCRIPTION.
-            3- BankRightLevel : [Float]
+            3- bank_right_level: [Float]
                 DESCRIPTION.
-            4- InterPLHeight : [Float]
+            4- inter_pl_height: [Float]
                 Intermediate point left.
-            5- InterPRHeight : [Float]
+            5- inter_pr_height: [Float]
                 Intermediate point right.
-            6- Bl : [Float]
+            6- bl: [Float]
                 DESCRIPTION.
-            7- Br : [Float]
+            7- br: [Float]
                 DESCRIPTION.
-            8- xl : [Float]
+            8- xl: [Float]
                 DESCRIPTION.
-            9- yl : [Float]
+            9- yl: [Float]
                 DESCRIPTION.
-            10- xr : [Float]
+            10- xr: [Float]
                 DESCRIPTION.
-            11- yr : [Float]
+            11- yr: [Float]
                 DESCRIPTION.
-            12- B : [Float]
+            12- b: [Float]
                 DESCRIPTION.
-            13- dbf : [Float/Bool]
+            13- dbf: [Float/Bool]
                 DESCRIPTION.
 
         Returns
         -------
-        Xcoords : [List]
+        x_coords: [List]
             DESCRIPTION.
-        Xcoords : [List]
+        x_coords: [List]
             DESCRIPTION.
-        Zcoords : [List]
+        z_coords: [List]
             DESCRIPTION.
         """
-        BedLevel = XSGeometry[0]
-        BankLeftLevel = XSGeometry[1]
-        BankRightLevel = XSGeometry[2]
-        InterPLHeight = XSGeometry[3]
-        InterPRHeight = XSGeometry[4]
-        Bl = XSGeometry[5]
-        Br = XSGeometry[6]
-        xl = XSGeometry[7]
-        yl = XSGeometry[8]
-        xr = XSGeometry[9]
-        yr = XSGeometry[10]
-        B = XSGeometry[11]
+        bed_level = xs_geometry[0]
+        bank_left_level = xs_geometry[1]
+        bank_right_level = xs_geometry[2]
+        inter_pl_height = xs_geometry[3]
+        inter_pr_height = xs_geometry[4]
+        bl = xs_geometry[5]
+        br = xs_geometry[6]
+        xl = xs_geometry[7]
+        yl = xs_geometry[8]
+        xr = xs_geometry[9]
+        yr = xs_geometry[10]
+        b = xs_geometry[11]
 
-        Xcoords = list()
-        Ycoords = list()
-        Zcoords = list()
+        x_coords = list()
+        y_coords = list()
+        z_coords = list()
         # point 1
-        Xcoords.append(xl)
-        Ycoords.append(yl)
-        Zcoords.append(BankLeftLevel)
+        x_coords.append(xl)
+        y_coords.append(yl)
+        z_coords.append(bank_left_level)
         # 8 points cross sections
         if dbf:
             # point 2
-            Xcoords.append(xl)
-            Ycoords.append(yl)
-            Zcoords.append(BedLevel + dbf + InterPLHeight)
+            x_coords.append(xl)
+            y_coords.append(yl)
+            z_coords.append(bed_level + dbf + inter_pl_height)
             # point 3
-            Xcoords.append(xl + (Bl / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + (Bl / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel + dbf)
+            x_coords.append(xl + (bl / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + (bl / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level + dbf)
             # point 4
-            Xcoords.append(xl + (Bl / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + (Bl / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel)
+            x_coords.append(xl + (bl / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + (bl / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level)
             # point 5
-            Xcoords.append(xl + ((Bl + B) / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + ((Bl + B) / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel)
+            x_coords.append(xl + ((bl + b) / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + ((bl + b) / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level)
             # point 6
-            Xcoords.append(xl + ((Bl + B) / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + ((Bl + B) / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel + dbf)
+            x_coords.append(xl + ((bl + b) / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + ((bl + b) / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level + dbf)
             # point 7
-            Xcoords.append(xr)
-            Ycoords.append(yr)
-            Zcoords.append(BedLevel + dbf + InterPRHeight)
+            x_coords.append(xr)
+            y_coords.append(yr)
+            z_coords.append(bed_level + dbf + inter_pr_height)
         else:
             # point 2
-            Xcoords.append(xl)
-            Ycoords.append(yl)
-            Zcoords.append(BedLevel + InterPLHeight)
+            x_coords.append(xl)
+            y_coords.append(yl)
+            z_coords.append(bed_level + inter_pl_height)
             # point 3
-            Xcoords.append(xl + (Bl / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + (Bl / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel)
+            x_coords.append(xl + (bl / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + (bl / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level)
             # point 4
-            Xcoords.append(xl + ((Bl + B) / (Bl + Br + B)) * (xr - xl))
-            Ycoords.append(yl + ((Bl + B) / (Bl + Br + B)) * (yr - yl))
-            Zcoords.append(BedLevel)
+            x_coords.append(xl + ((bl + b) / (bl + br + b)) * (xr - xl))
+            y_coords.append(yl + ((bl + b) / (bl + br + b)) * (yr - yl))
+            z_coords.append(bed_level)
             # point 5
-            Xcoords.append(xr)
-            Ycoords.append(yr)
-            Zcoords.append(BedLevel + InterPRHeight)
+            x_coords.append(xr)
+            y_coords.append(yr)
+            z_coords.append(bed_level + inter_pr_height)
 
         # point 8
-        Xcoords.append(xr)
-        Ycoords.append(yr)
-        Zcoords.append(BankRightLevel)
+        x_coords.append(xr)
+        y_coords.append(yr)
+        z_coords.append(bank_right_level)
 
-        return Xcoords, Ycoords, Zcoords
+        return x_coords, y_coords, z_coords
 
     @staticmethod
     def get_vortices(H, Hl, Hr, Bl, Br, B, dbf):

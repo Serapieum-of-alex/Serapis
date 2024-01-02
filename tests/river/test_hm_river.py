@@ -833,7 +833,7 @@ def test_StatisticalProperties(
     distributionpr_gum_columns: list,
 ):
     rivers = River("HM", version=version)
-    rivers.statistical_properties(distribution_properties_fpath, distibution="GEV")
+    rivers.statistical_properties(distribution_properties_fpath, distribution="GEV")
     assert all(
         elem in rivers.SP.columns.to_list() for elem in statistical_properties_columns
     )
@@ -841,7 +841,7 @@ def test_StatisticalProperties(
         elem in rivers.SP.columns.to_list() for elem in distributionpr_gev_columns[:3]
     )
 
-    rivers.statistical_properties(distribution_properties_fpath, distibution="Gumbel")
+    rivers.statistical_properties(distribution_properties_fpath, distribution="Gumbel")
     assert all(
         elem in rivers.SP.columns.to_list() for elem in statistical_properties_columns
     )

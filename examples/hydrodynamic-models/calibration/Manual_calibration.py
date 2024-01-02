@@ -369,7 +369,7 @@ fig, ax = Vis.plotCrossSections(
     plotting_option=3,
 )
 # %% Animation
-""" periods of water level exceeds the bankful depth"""
+""" periods of water level exceeds the bankfull_depth depth"""
 
 start = "1955-02-10"
 end = "1955-02-11"

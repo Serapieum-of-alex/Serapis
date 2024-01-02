@@ -1264,7 +1264,7 @@ class Calibration(River):
         reach = self.getReach(reach_id)
         reach["glnew"] = self._smooth(reach["gl"], window=window)
         # calculate the difference in the bed level and take it from
-        # the bankful depth
+        # the bankfull_depth depth
         reach.loc[:, "diff"] = reach.loc[:, "glnew"] - reach.loc[:, "gl"]
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] - reach.loc[:, "diff"]
         reach.loc[:, "gl"] = reach.loc[:, "glnew"]
@@ -1323,7 +1323,7 @@ class Calibration(River):
         reach["banklevelnew"] = self._smooth(reach["banklevel"], window=window)
 
         reach.loc[:, "diff"] = reach.loc[:, "banklevelnew"] - reach.loc[:, "banklevel"]
-        # add the difference to the bankful depth
+        # add the difference to the bankfull_depth depth
         reach.loc[:, "dbf"] = reach.loc[:, "dbf"] + reach.loc[:, "diff"]
 
         reach.drop(labels=["banklevel"], axis=1, inplace=True)
