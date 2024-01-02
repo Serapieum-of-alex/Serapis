@@ -37,7 +37,7 @@ def test_read_cross_sections_method(
 def test_read_river_network_method(version: int, river_network_path: str):
     rivers = River("HM", version=version)
     rivers.read_river_network(river_network_path)
-    assert len(rivers.rivernetwork) == 3 and len(rivers.rivernetwork.columns) == 3
+    assert len(rivers.river_network) == 3 and len(rivers.river_network.columns) == 3
 
 
 def test_create_sub_instance(

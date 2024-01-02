@@ -638,7 +638,7 @@ class Calibration(River):
         """
         if addHQ2 and self.version == 1:
             msg = "please read the traceall file using the RiverNetwork method"
-            assert hasattr(self, "rivernetwork"), msg
+            assert hasattr(self, "river_network"), msg
             msg = "please read the HQ file first using ReturnPeriod method"
             assert hasattr(self, "RP"), msg
 
@@ -670,9 +670,9 @@ class Calibration(River):
             logger.debug(f"{i} - {path}{nodeid}.txt is read")
 
             if addHQ2 and self.version == 1:
-                USnode = self.rivernetwork.loc[
+                USnode = self.river_network.loc[
                     np.where(
-                        self.rivernetwork["id"]
+                        self.river_network["id"]
                         == self.hm_gauges.loc[i, self.gauge_id_col]
                     )[0][0],
                     "us",

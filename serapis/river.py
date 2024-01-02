@@ -106,7 +106,7 @@ class River:
         H=None,
         slope=None,
         event_index=None,
-        rivernetwork=None,
+        river_network=None,
         SP=None,
         customized_runs_path=None,
         Segments=None,
@@ -474,7 +474,7 @@ class River:
         self.read_xs(f"{self.wd}/inputs/1d/topo/{self.XSF}")
         # Laterals file, BC file
         self.laterals_file, self.BCF = content[6][:-1].split(" ")
-        # RiverNetwork file
+        # river_network file
         self.river_network_file = content[8][:-1]
         self.read_river_network(f"{self.wd}/inputs/1d/topo/{self.river_network_file}")
         # Slope File
@@ -1244,9 +1244,9 @@ class River:
         path: [String]
             path to the result files.
         node_id: [Integer]
-            the id of the given sub-basin .
+            the id of the given sub-basin.
         from_day: [integer], optional
-                the day you want to read the result from, the first day is 1 not zero.The default is ''.
+                the day you want to read the result from, the first day is 1 not zero. The default is ''.
         to_day: [integer], optional
                 the day you want to read the result to.
         date_format: [str]
@@ -1254,7 +1254,7 @@ class River:
 
         Returns
         -------
-        q : [Dataframe]
+        q: [Dataframe]
             time series of the runoff.
         """
         rpath = os.path.join(path, f"{node_id}.txt")
@@ -1586,7 +1586,7 @@ class River:
         Parameters
         ----------
         path: [String]
-            path to the HQ.csv file including the file name and extention, "HQRhine.csv".
+            path to the HQ.csv file including the file name and extension, i.e. "HQRhine.csv".
 
         Returns
         -------
@@ -1605,9 +1605,8 @@ class River:
 
         Parameters
         ----------
-        path : [String]
-            path to the Trace.txt file including the file name and extension
-                            "path/Trace.txt".
+        path: [String]
+            path to the Trace.txt file including the file name and extension.
 
         Returns
         -------
@@ -1635,8 +1634,8 @@ class River:
             int(j) for j in content[i].split(",")[2:]
         ]
         river_network.columns = ["No", "id", "us"]
-        self.rivernetwork = river_network[:]
-        self.Segments = self.rivernetwork["id"].tolist()
+        self.river_network = river_network[:]
+        self.Segments = self.river_network["id"].tolist()
 
     def trace_segment(self, sub_id: int):
         """TraceSegment.
@@ -1660,10 +1659,12 @@ class River:
         >>> sub_id = 42
         >>> River.trace_segment(sub_id)
         """
-        us = self.rivernetwork["us"][np.where(self.rivernetwork["id"] == sub_id)[0][0]]
-        for i in range(len(self.rivernetwork)):
-            if id in self.rivernetwork.loc[i, "us"]:
-                ds = self.rivernetwork.loc[i, "id"]
+        us = self.river_network["us"][
+            np.where(self.river_network["id"] == sub_id)[0][0]
+        ]
+        for i in range(len(self.river_network)):
+            if id in self.river_network.loc[i, "us"]:
+                ds = self.river_network.loc[i, "id"]
                 break
             else:
                 ds = []
@@ -3433,7 +3434,7 @@ class Reach(River):
         if isinstance(River.slope, DataFrame) and self.id in River.slope["id"].tolist():
             self.slope = River.slope[River.slope["id"] == sub_id]["slope"].tolist()[0]
 
-        if isinstance(River.rivernetwork, DataFrame):
+        if isinstance(River.river_network, DataFrame):
             self.usnode, self.dsnode = River.trace_segment(sub_id)
         else:
             self.usnode, self.dsnode = [], []
