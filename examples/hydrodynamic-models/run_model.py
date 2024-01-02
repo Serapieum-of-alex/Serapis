@@ -41,7 +41,7 @@ River.Compressed = True
 River.RRMPath = RRMPath
 
 Path = wpath + "/processing/def1D.txt"
-River.read1DConfigFile(Path)
+River.read_1d_config_file(Path)
 # %%
 IF = Interface("Rhine")
 IF.read_xs(RIM2Files + "/XS.csv")
@@ -99,7 +99,7 @@ for i in range(River.NoSeg):
             MinQ = pd.DataFrame(index=ind, columns=Q.columns)
             MinQ.loc[:, :] = Q.loc[:, :].resample("1Min").mean().interpolate("linear")
             # convert the UShydrograph into water depth
-            Hbnd = Sub.H2Q(MinQ["US"].values)
+            Hbnd = Sub.h_to_q(MinQ["US"].values)
 
             if step_ind == 1 or ICflag[i] == 0:
                 inih = 0.01

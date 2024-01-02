@@ -1,4 +1,4 @@
-"""Hydaulic model calibration related function module."""
+"""Hydraulic model calibration related function module."""
 import datetime as dt
 from typing import Any, Union
 from pathlib import Path
@@ -18,7 +18,7 @@ from serapeum_utils.utils import class_attr_initialize
 from serapis.serapis_warnings import SilenceShapelyWarning
 from serapis.river import River
 
-datafn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
+data_fn = lambda x: dt.datetime.strptime(x, "%Y-%m-%d")
 
 SilenceShapelyWarning()
 
@@ -533,7 +533,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self._readRRMResults(
+                    self.q_rrm[station_id] = self._read_rrm_results(
                         self.version,
                         self.rrm_reference_index,
                         path,
@@ -552,7 +552,7 @@ class Calibration(River):
             for i in range(len(gauges)):
                 station_id = gauges[i]
                 try:
-                    self.q_rrm[station_id] = self._readRRMResults(
+                    self.q_rrm[station_id] = self._read_rrm_results(
                         self.version,
                         self.rrm_reference_index,
                         path,
@@ -561,7 +561,7 @@ class Calibration(River):
                         today,
                         date_format=fmt,
                     )[station_id].tolist()
-                    self.QRRM2[station_id] = self._readRRMResults(
+                    self.QRRM2[station_id] = self._read_rrm_results(
                         self.version,
                         self.rrm_reference_index,
                         path2,
@@ -658,7 +658,7 @@ class Calibration(River):
         # fill non modelled time steps with zeros
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.q_hm[nodeid] = self._readRRMResults(
+            self.q_hm[nodeid] = self._read_rrm_results(
                 self.version,
                 self.reference_index,
                 path,
@@ -757,7 +757,7 @@ class Calibration(River):
         self.wl_hm = pd.DataFrame()
         for i in range(len(gauges)):
             nodeid = gauges[i]
-            self.wl_hm[nodeid] = self._readRRMResults(
+            self.wl_hm[nodeid] = self._read_rrm_results(
                 self.version,
                 self.reference_index,
                 path,
@@ -2101,24 +2101,3 @@ class Calibration(River):
                 df.to_file(path + "MetricsHM_WL_Obs.geojson", driver="GeoJSON")
             if isinstance(self.metrics_hm_wl_vs_obs, DataFrame):
                 df.to_csv(path + "MetricsHM_WL_Obs.geojson.csv")
-
-    def ListAttributes(self):
-        """ListAttributes.
-
-        Print Attributes List
-        """
-        logger.debug("\n")
-        logger.debug(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                logger.debug(str(key) + " : " + repr(self.__dict__[key]))
-
-        logger.debug("\n")

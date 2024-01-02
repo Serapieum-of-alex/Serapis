@@ -47,7 +47,7 @@ River.statistical_properties(path)
 # calculate the capacity of the bankfull area
 River.get_river_capacity("Qbkf")
 # calculate the capacity of the whole cross section till the lowest dike level
-River.get_river_capacity("Qc2", Option=2)
+River.get_river_capacity("Qc2", option=2)
 
 River.calibrate_dike("RP", "QcRP")
 River.cross_sections["ZlDiff"] = (

@@ -60,7 +60,7 @@ rrmstart = "1955-1-1"
 
 River = R.River("HM", version=3, start=start, rrmstart=rrmstart)
 # read the configuration file
-River.read1DConfigFile(rpath + "/processing/def1D-1segment_very_steep.txt")
+River.read_1d_config_file(rpath + "/processing/def1D-1segment_very_steep.txt")
 # %% Interface
 IF = Interface("Rhine", start=start)
 IF.read_xs(RIM2Files + "/xs_same_downward-3segment.csv")

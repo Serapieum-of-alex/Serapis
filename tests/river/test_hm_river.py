@@ -833,7 +833,7 @@ def test_StatisticalProperties(
     distributionpr_gum_columns: list,
 ):
     rivers = River("HM", version=version)
-    rivers.statistical_properties(distribution_properties_fpath, Distibution="GEV")
+    rivers.statistical_properties(distribution_properties_fpath, distibution="GEV")
     assert all(
         elem in rivers.SP.columns.to_list() for elem in statistical_properties_columns
     )
@@ -841,7 +841,7 @@ def test_StatisticalProperties(
         elem in rivers.SP.columns.to_list() for elem in distributionpr_gev_columns[:3]
     )
 
-    rivers.statistical_properties(distribution_properties_fpath, Distibution="Gumbel")
+    rivers.statistical_properties(distribution_properties_fpath, distibution="Gumbel")
     assert all(
         elem in rivers.SP.columns.to_list() for elem in statistical_properties_columns
     )
@@ -859,7 +859,7 @@ def test_GetCapacity(
     rivers.read_xs(river_cross_section_path)
     rivers.statistical_properties(distribution_properties_hm_results_fpath)
     rivers.get_river_capacity("Qbkf")
-    rivers.get_river_capacity("Qc2", Option=2)
+    rivers.get_river_capacity("Qc2", option=2)
     cols = rivers.cross_sections.columns.tolist()
     assert "Slope" in cols
     assert "Qbkf" in cols

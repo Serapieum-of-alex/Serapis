@@ -24,17 +24,17 @@ Test.read_boundary_conditions(
     path=path + "/data/hydrodynamic model/BCH-2.txt",
     fmt="%Y-%m-%d %H:%M:%S",
     ds=True,
-    dsbcpath=path + "/data/hydrodynamic model/BCQ-constant.txt",
+    dsbc_path=path + "/data/hydrodynamic model/BCQ-constant.txt",
 )
 # %% Run the model
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"
 Test.preissmann(
-    start, end, fmt="%Y-%m-%d %H:%M:%S", maxiteration=5, beta=1, epsi=0.5, theta=0.55
+    start, end, fmt="%Y-%m-%d %H:%M:%S", max_iteration=5, beta=1, epsi=0.5, theta=0.55
 )
 print("Stability Factor = " + str(Test.stabilityfactor.min()))
 # %% Visualization
 start = "2010-01-01 00:00:00"
 end = "2010-1-1 05:00:00"
 # ffmpeg_path = "F:/Users/mofarrag/.matplotlib/ffmpeg-4.4-full_build/bin/ffmpeg.exe"
-anim = Test.animate_flood_wave(start=start, end=end, interval=2, textlocation=-1)
+anim = Test.animate_flood_wave(start=start, end=end, interval=2, text_location=-1)

@@ -10,6 +10,23 @@ class SaintVenant:
     """SaintVenant equation solver."""
 
     def __init__(self, maxiteration=10, beta=1, epsi=0.5, theta=0.5):
+        """SaintVenant equation solver.
+
+        Parameters
+        ----------
+        maxiteration: int, optional
+            DESCRIPTION. The default is 10.
+        beta: int, optional
+            DESCRIPTION. The default is 1.
+        epsi: float, optional
+            DESCRIPTION. The default is 0.5.
+        theta : float, optional
+            DESCRIPTION. The default is 0.5.
+
+        Returns
+        -------
+        None.
+        """
         # preismann scheme parameters
         self.theta = theta
         self.epsi = epsi

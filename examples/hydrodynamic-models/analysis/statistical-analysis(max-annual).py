@@ -30,13 +30,13 @@ Calib = RC.Calibration("HM", 3, gauge_id_col="id")
 Rhine = R.River("HM")
 Rhine.statistical_properties(
     hm_path + "/Statistical analysis/" + "distribution-properties.csv",
-    Distibution="Gumbel",
+    distibution="Gumbel",
 )
 
 Rhine_obs = R.River("Observed")
 Rhine_obs.statistical_properties(
     observed_path + "/Statistical analysis/" + "distribution-properties.csv",
-    Distibution="Gumbel",
+    distibution="Gumbel",
 )
 # %% read the discharge data to get the max annual values
 Calib.readGaugesTable(gauges_files)
@@ -161,11 +161,11 @@ for i in range(len(Qgauges)):
     # GRDC.Qrp.loc[GRDC.Qrp.index[i],:] = gumbel_r.ppf(F,loc=GRDC.SP.loc[i,"loc"], scale=GRDC.SP.loc[i,"scale"])
     # River1.Qrp.loc[River1.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River1.SP.loc[i,"loc"], scale=River1.SP.loc[i,"scale"])
     # River2.Qrp.loc[River2.Qrp.index[i],:] = gumbel_r.ppf(F,loc=River2.SP.loc[i,"loc"], scale=River2.SP.loc[i,"scale"])
-    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.get_Q_for_return_period(
+    Rhine_obs.Qrp.loc[SubID, :] = Rhine_obs.get_q_for_return_period(
         SubID, T, distribution="Gumbel"
     )
     # River1.Qrp.loc[River1.Qrp.index[i],:] = River1.GetQForReturnPeriod(GRDC.SP.loc[i,"id"], T)
-    Rhine.Qrp.loc[SubID, :] = Rhine.get_Q_for_return_period(
+    Rhine.Qrp.loc[SubID, :] = Rhine.get_q_for_return_period(
         SubID, T, distribution="Gumbel"
     )
 # %% plot the frequency curves separately

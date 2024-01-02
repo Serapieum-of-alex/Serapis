@@ -160,7 +160,7 @@ class Interface(River):
 
             node_ids = table.loc[:, "xsid"].to_list()
             fnames = [f"{prefix}{NodeID}" for NodeID in node_ids]
-            func = self._readRRMResults
+            func = self._read_rrm_results
             results = Parallel(n_jobs=cores)(
                 delayed(func)(
                     self.version,
@@ -183,7 +183,7 @@ class Interface(River):
                 node_id = table.loc[i, "xsid"]
                 fname = f"{prefix}{node_id}"
 
-                rrm_ts[node_id] = self._readRRMResults(
+                rrm_ts[node_id] = self._read_rrm_results(
                     self.version,
                     self.reference_Index,
                     path,

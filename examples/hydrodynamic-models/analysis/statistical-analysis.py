@@ -87,7 +87,7 @@ Inputs35.statistical_properties(
     saveto,
     SeparateFiles=True,
     Filter=NoValue,
-    Distibution="GUM",
+    distibution="GUM",
     method="lmoments",
     file_extension=".csv",
 )
@@ -108,7 +108,7 @@ Inputs35.statistical_properties(
     saveto,
     SeparateFiles=True,
     Filter=NoValue,
-    Distibution="GUM",
+    distibution="GUM",
     method="lmoments",
     file_extension=".txt",
     Results=True,
