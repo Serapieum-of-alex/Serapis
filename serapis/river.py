@@ -20,6 +20,7 @@ from statista import metrics as metrics
 from statista.distributions import Distributions
 from serapis.serapis_warnings import SilencePandasWarning
 from serapis.saintvenant import SaintVenant
+from cleopatra.styles import Styles
 from serapis.plot.visualizer import Visualize as V
 
 SilencePandasWarning()
@@ -4873,7 +4874,7 @@ class Reach(River):
                     label="RIM",
                     zorder=self.hmorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(6),
+                    linestyle=Styles.get_line_style(6),
                     color=self.hmcolor,
                 )
             except KeyError:
@@ -4896,7 +4897,7 @@ class Reach(River):
                         label="BC",
                         zorder=self.ushorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.ushstyle),
+                        linestyle=Styles.get_line_style(self.ushstyle),
                         color=self.ushcolor,
                     )
                 # laterals
@@ -4909,7 +4910,7 @@ class Reach(River):
                         label="laterals",
                         zorder=self.latorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.latstyle),
+                        linestyle=Styles.get_line_style(self.latstyle),
                         color=self.latcolor,
                     )
                 if self.plottotal:
@@ -4920,7 +4921,7 @@ class Reach(River):
                             label="US/BC + laterals",
                             zorder=self.totalorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.totalstyle),
+                            linestyle=Styles.get_line_style(self.totalstyle),
                             color=self.totalcolor,
                         )
                     except AttributeError:
@@ -4936,7 +4937,7 @@ class Reach(River):
                         label="US Hydrograph",
                         zorder=self.ushorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.ushstyle),
+                        linestyle=Styles.get_line_style(self.ushstyle),
                         color=self.ushcolor,
                     )
                 except KeyError:
@@ -4956,7 +4957,7 @@ class Reach(River):
                     linewidth=self.linewidth,
                     zorder=self.gaugeorder,
                     color=self.gaugecolor,
-                    linestyle=V.getLineStyle(self.gaugestyle),
+                    linestyle=Styles.get_line_style(self.gaugestyle),
                 )
 
             # specific XS
@@ -4970,7 +4971,7 @@ class Reach(River):
                     zorder=self.xsorder,
                     linewidth=self.linewidth,
                     color=self.xscolor,
-                    linestyle=V.getLineStyle(self.xslinestyle),
+                    linestyle=Styles.get_line_style(self.xslinestyle),
                 )
             # RRM
             if self.plotrrm:
@@ -4981,7 +4982,7 @@ class Reach(River):
                             label="mHM-RIM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.rrmlinestyle),
+                            linestyle=Styles.get_line_style(self.rrmlinestyle),
                             color=self.rrmcolor,
                         )
                     except KeyError:
@@ -4996,7 +4997,7 @@ class Reach(River):
                             label="mHM-mHM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.rrm2linesytle),
+                            linestyle=Styles.get_line_style(self.rrm2linesytle),
                             color=self.rrm2color,
                         )
                     except KeyError:
@@ -5011,7 +5012,7 @@ class Reach(River):
                 label="RIM",
                 zorder=3,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(6),
+                linestyle=Styles.get_line_style(6),
                 color=self.hmcolor,
             )
             # plot the gauge data
@@ -5152,7 +5153,7 @@ class Reach(River):
                     label="BC",
                     zorder=self.ushorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.ushstyle),
+                    linestyle=Styles.get_line_style(self.ushstyle),
                     color=self.ushcolor,
                 )
             # laterals
@@ -5162,7 +5163,7 @@ class Reach(River):
                     label="laterals Sum \n up to - XS-" + str(specific_xs),
                     zorder=self.latorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.latstyle),
+                    linestyle=Styles.get_line_style(self.latstyle),
                     color=self.latcolor,
                 )
             if self.plottotal:
@@ -5173,7 +5174,7 @@ class Reach(River):
                     label="US/BC \n+ laterals",
                     zorder=self.totalorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.totalstyle),
+                    linestyle=Styles.get_line_style(self.totalstyle),
                     color=self.totalcolor,
                 )
 
@@ -5184,7 +5185,7 @@ class Reach(River):
                 label="US Hydrograph",
                 zorder=self.ushorder,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(self.ushstyle),
+                linestyle=Styles.get_line_style(self.ushstyle),
                 color=self.ushcolor,
             )
 
@@ -5198,7 +5199,7 @@ class Reach(River):
                 label="RIM",
                 zorder=self.hmorder,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(6),
+                linestyle=Styles.get_line_style(6),
                 color=self.hmcolor,
             )
         # RRM
@@ -5210,7 +5211,7 @@ class Reach(River):
                     label="mHM",
                     zorder=self.rrmorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.rrmlinesytle),
+                    linestyle=Styles.get_line_style(self.rrmlinesytle),
                     color=self.rrmcolor,
                 )
             except KeyError:
@@ -5482,7 +5483,7 @@ class Reach(River):
             zorder=self.hmorder,
             linewidth=self.linewidth,
             color=self.hmcolor,
-            linestyle=V.getLineStyle(self.hmstyle),
+            linestyle=Styles.get_line_style(self.hmstyle),
         )
 
         if self.plotgauge:
@@ -5492,7 +5493,7 @@ class Reach(River):
                 zorder=self.gaugeorder,
                 linewidth=self.linewidth,
                 color=self.gaugecolor,
-                linestyle=V.getLineStyle(self.gaugestyle),
+                linestyle=Styles.get_line_style(self.gaugestyle),
             )
 
         start, end = ax.get_xlim()
