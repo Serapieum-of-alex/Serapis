@@ -15,11 +15,9 @@ import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
-from scipy.stats import genextreme, gumbel_r
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
 from statista import metrics as metrics
-from statista.distributions import GEV, Gumbel
-
+from statista.distributions import Distributions
 from serapis.serapis_warnings import SilencePandasWarning
 from serapis.saintvenant import SaintVenant
 from serapis.plot.visualizer import Visualize as V
@@ -1415,7 +1413,6 @@ class River:
     def storage_cell(self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d"):
         """storage_cell.
 
-
         Parameters
         ----------
         start: [str]
@@ -1769,29 +1766,21 @@ class River:
             RP1000=0,
             RP5000=0,
         )
-        F = 1 - (1 / T)
+        cdf = 1 - (1 / T)
+        dist = Distributions(distribution)
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
                 col1 = self.SP.columns.to_list().index("RP2")
+                parameters = {
+                    "loc": self.SP.loc[i, "loc"],
+                    "scale": self.SP.loc[i, "scale"],
+                }
                 if distribution == "GEV":
-                    dist = GEV()
-                    parameters = {
-                        "shape": self.SP.loc[i, "c"],
-                        "loc": self.SP.loc[i, "loc"],
-                        "scale": self.SP.loc[i, "scale"],
-                    }
-                    self.SP.loc[
-                        i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theoretical_estimate(parameters, F)
-                else:
-                    dist = Gumbel()
-                    parameters = {
-                        "loc": self.SP.loc[i, "loc"],
-                        "scale": self.SP.loc[i, "scale"],
-                    }
-                    self.SP.loc[
-                        i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theoretical_estimate(parameters, F)
+                    parameters["shape"] = self.SP.loc[i, "c"]
+
+                self.SP.loc[
+                    i, self.SP.keys()[col1:].tolist()
+                ] = dist.theoretical_estimate(parameters, cdf)
 
     def get_return_period(
         self,
@@ -1818,35 +1807,26 @@ class River:
         return period:[Float]
             return period calculated for the given discharge using the parameters of the distribution for the catchment.
         """
+
         if not isinstance(self.SP, DataFrame):
             raise ValueError(
                 "Please read the statistical properties file for the catchment first"
             )
+
+        dist = Distributions(distribution)
+
         try:
             loc = np.where(self.SP["id"] == sub_id)[0][0]
+            parameter = dict(
+                loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+            )
+
             if distribution == "GEV":
-                # dist = GEV()
-                # rp = dist.getRP(
-                #     self.SP.loc[loc, "c"],
-                #     self.SP.loc[loc, "loc"],
-                #     self.SP.loc[loc, "scale"],
-                #     Q
-                # )
+                parameter["shape"] = self.SP.loc[loc, "c"]
 
-                F = genextreme.cdf(
-                    q,
-                    c=self.SP.loc[loc, "c"],
-                    loc=self.SP.loc[loc, "loc"],
-                    scale=self.SP.loc[loc, "scale"],
-                )
-            else:
-                # dist = Gumbel()
-                # rp = dist.getRP(self.SP.loc[loc, "loc"], self.SP.loc[loc, "scale"], Q)
-                F = gumbel_r.cdf(
-                    q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-                )
+            rp = dist.get_rp(parameter, q)
 
-            return 1 / (1 - F)
+            return rp
         except IndexError:
             return -1
 
@@ -1879,20 +1859,19 @@ class River:
                 "the SP dataframe should have a column 'id' containing the id of the gauges"
             )
 
-        F = 1 - (1 / return_period)
+        cdf = 1 - (1 / return_period)
+        dist = Distributions(distribution)
+
         try:
             loc = np.where(self.SP["id"] == sub_id)[0][0]
+            parameter = dict(
+                loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+            )
+
             if distribution == "GEV":
-                q = genextreme.ppf(
-                    F,
-                    c=self.SP.loc[loc, "c"],
-                    loc=self.SP.loc[loc, "loc"],
-                    scale=self.SP.loc[loc, "scale"],
-                )
-            else:
-                q = gumbel_r.ppf(
-                    F, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-                )
+                parameter["shape"] = self.SP.loc[loc, "c"]
+
+            q = dist.theoretical_estimate(parameter, cdf)
             return q
         except:
             return -1
@@ -1939,7 +1918,7 @@ class River:
             GetCapacity method calculates the discharge that is enough to fill the cross-section using kinematic wave
             approximation (using a bed slope with the manning equation)
 
-            In order to calculate the return period coresponding to each cross-section discharge, each cross-section
+            In order to calculate the return period corresponding to each cross-section discharge, each cross-section
             needs to be assigned the id of a specific gauge, as the statistical analysis is being done for the gauges
             only, so the distribution parameters are estimated only for the gauges.
 
@@ -1962,7 +1941,7 @@ class River:
             attribute in the River object in a columns with the given column_name
         column_name+"RP":[dataframe column]
             if you already rad the statistical properties another column containing
-            the coresponding return period to the discharge,
+            the corresponding return period to the discharge,
             the calculated return period will be stored in a column with a name
             the given column_name+"RP", if the column_name was QC then the discharge
             will be in a Qc columns and the return period will be in QcRP column
@@ -2021,7 +2000,7 @@ class River:
                 if "gauge" not in self.cross_sections.columns.tolist():
                     raise ValueError(
                         "To calculate the return period for each cross-section, a column with "
-                        "the coresponding gauge-id should be in the cross-section file"
+                        "the corresponding gauge-id should be in the cross-section file"
                     )
                 rp = self.get_return_period(
                     self.cross_sections.loc[i, "gauge"],
@@ -4008,7 +3987,9 @@ class Reach(River):
         elif column_name == "h":
             self.resampled_h.loc[:, xsid] = q.tolist()
 
-    def detailed_statistical_calculation(self, return_period: Union[list, np.ndarray]):
+    def detailed_statistical_calculation(
+        self, return_period: Union[list, np.ndarray], distribution: str = "GEV"
+    ):
         """detailed_statistical_calculation.
 
             detailed_statistical_calculation method calculates the discharge related to a specific given return period.
@@ -4017,6 +3998,8 @@ class Reach(River):
         ----------
         return_period : TYPE
             DESCRIPTION.
+        distribution: [str]
+            distribution name, ["GEV", "Gumbel", "Exponential", "Normal"]. Default is "GEV"
 
         Returns
         -------
@@ -4024,12 +4007,19 @@ class Reach(River):
         """
         assert hasattr(self, "SP"), "you "
         return_period = np.array(return_period)
-        F = 1 - (1 / return_period)
+        cdf = 1 - (1 / return_period)
         self.Qrp = pd.DataFrame()
         self.Qrp["RP"] = return_period
-        self.Qrp["Q"] = gumbel_r.ppf(
-            F, loc=self.SP.loc[0, "loc"], scale=self.SP.loc[0, "scale"]
+
+        dist = Distributions(distribution)
+        parameters = dict(
+            loc=self.SP.loc[0, "loc"],
+            scale=self.SP.loc[0, "scale"],
         )
+        if distribution == "GEV":
+            parameters["shape"] = self.SP.loc[0, "shape"]
+
+        self.Qrp["Q"] = dist.theorical_quantile(parameters, cdf)
 
     def _get_reach_overtopping(
         self, left: bool, event_days: List[int], delimiter: str = r"\s+"
