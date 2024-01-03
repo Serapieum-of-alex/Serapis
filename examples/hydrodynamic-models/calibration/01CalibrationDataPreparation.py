@@ -14,8 +14,8 @@ matplotlib.use("TkAgg")
 rpath = r"C:\gdrive\\Case-studies"
 Comp = rf"{rpath}\ClimXtreme\rim_base_data\setup"
 os.chdir(Comp + "/base_data/calibration_results")
-import Hapi.hm.calibration as RC
-import Hapi.hm.river as R
+import serapis.calibration as RC
+import serapis.river as R
 
 # %% Hydraulic model files
 hm_results_path = (
