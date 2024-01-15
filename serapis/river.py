@@ -5479,7 +5479,7 @@ class Reach(River):
 
         ax.plot(
             self.xs_water_level.loc[start:end, gauge_xs],
-            label="RIM",
+            label="Hydraulic model",
             zorder=self.hmorder,
             linewidth=self.linewidth,
             color=self.hmcolor,
@@ -5499,7 +5499,7 @@ class Reach(River):
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, self.nxlabels))
 
-        ax.set_title("Water Level - " + gauge_name, fontsize=20)
+        ax.set_title(f"Water Level - {gauge_name}", fontsize=20)
         plt.legend(fontsize=self.legendsize)
         ax.set_xlabel("Time", fontsize=15)
         ax.set_ylabel("Water Level m", fontsize=15)
