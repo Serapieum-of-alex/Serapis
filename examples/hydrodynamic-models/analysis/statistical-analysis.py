@@ -31,10 +31,10 @@ Outputs:
 """
 import os
 
-CompP = r"F:\01Algorithms\Hydrology\HAPI"
+CompP = r"F:\01Algorithms\Hydrology\Serapis"
 os.chdir(CompP)
-import Hapi.hm.calibration as RC
-import Hapi.hm.inputs as IN
+import serapis.calibration as RC
+import serapis.inputs as IN
 
 # import datetime as dt
 

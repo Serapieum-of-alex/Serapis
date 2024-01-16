@@ -850,7 +850,7 @@ def test_StatisticalProperties(
     )
 
 
-def test_GetCapacity(
+def test_get_capacity(
     version: int,
     river_cross_section_path: str,
     distribution_properties_hm_results_fpath: str,

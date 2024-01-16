@@ -12,10 +12,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import Hapi.hm.calibration as RC
-import Hapi.hm.river as R
-from Hapi.hm.interface import Interface
-from Hapi.plot.visualizer import Visualize as V
+import serapis.calibration as RC
+import serapis.river as R
+from serapis.interface import Interface
+from serapis.plot.visualizer import Visualize as V
 
 # %% Paths
 """change directory to the processing folder inside the project folder"""
@@ -75,7 +75,7 @@ start = "1955-1-1"
 rrmstart = "1955-1-1"
 River = R.River("HM", version=3, start=start, rrm_start=rrmstart)
 # %%
-path = r"C:\gdrive\01Algorithms\Hydrology\Hapi\examples\Hydrodynamic-models\test_case\processing\def1D-1segment.yaml"
+path = r"C:\gdrive\01Algorithms\Hydrology\serapis\examples\Hydrodynamic-models\test_case\processing\def1D-1segment.yaml"
 River.read_config(path)
 # %%
 # read the data of the river

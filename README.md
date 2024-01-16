@@ -1,14 +1,14 @@
-![GitHub release (latest by date)](https://img.shields.io/github/v/release/mafarrag/serapis)
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/Serapieum-of-alex/serapis)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5758979.svg)](https://doi.org/10.5281/zenodo.5758979)
-[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/MAfarrag/serapis/master)
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/Serapieum-of-alex/serapis/master)
 [![Python Versions](https://img.shields.io/pypi/pyversions/serapis.png)](https://img.shields.io/pypi/pyversions/serapis)
 [![Documentation Status](https://readthedocs.org/projects/serapis/badge/?version=latest)](https://serapis.readthedocs.io/en/latest/?badge=latest)
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)](https://github.com/pre-commit/pre-commit)
-[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/MAfarrag/serapis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/MAfarrag/serapis/context:python)
+[![Language grade: Python](https://img.shields.io/lgtm/grade/python/g/Serapieum-of-alex/serapis.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/Serapieum-of-alex/serapis/context:python)
 
 
-[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/MAfarrag/serapis/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/MAfarrag)
+[![GitHub Clones](https://img.shields.io/badge/dynamic/json?color=success&label=Clone&query=count&url=https://github.com/Serapieum-of-alex/serapis/blob/master/clone.json?raw=True&logo=github)](https://github.com/MShawon/github-clone-count-badge) [![Say Thanks!](https://img.shields.io/badge/Say%20Thanks-!-1EAEDB.svg)](https://saythanks.io/to/Serapieum-of-alex)
 
 Current build status
 ====================
@@ -23,17 +23,13 @@ Current build status
   </tr>
 </table>
 
-[![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/MAfarrag/serapis)
+[![Build status](https://ci.appveyor.com/api/projects/status/rys2u0l1nbmfjuww?svg=true)](https://ci.appveyor.com/project/Serapieum-of-alex/serapis)
 [![codecov](https://codecov.io/gh/Serapieum-of-alex/serapis/branch/main/graph/badge.svg?token=EMQSR7K2YV)](https://codecov.io/gh/Serapieum-of-alex/serapis)
-![GitHub last commit](https://img.shields.io/github/last-commit/MAfarrag/serapis)
-![GitHub forks](https://img.shields.io/github/forks/MAfarrag/serapis?style=social)
-![GitHub Repo stars](https://img.shields.io/github/stars/MAfarrag/serapis?style=social)
-![AppVeyor tests (branch)](https://img.shields.io/appveyor/tests/MAfarrag/Ha%5Bi/hydraulic-model)
-
+![GitHub last commit](https://img.shields.io/github/last-commit/Serapieum-of-alex/serapis)
+![GitHub forks](https://img.shields.io/github/forks/Serapieum-of-alex/serapis?style=social)
+![GitHub Repo stars](https://img.shields.io/github/stars/Serapieum-of-alex/serapis?style=social)
 
 [![Github all releases](https://img.shields.io/github/downloads/Naereen/StrapDown.js/total.svg)](https://GitHub.com/Naereen/StrapDown.js/releases/)
-
-![Profile views](https://gpvc.arturio.dev/MAfarrag)
 
 
 Current release info
@@ -41,7 +37,7 @@ Current release info
 
 | Name | Downloads                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               | Version | Platforms |
 | --- |-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------| --- | --- |
-| [![Conda Recipe](https://img.shields.io/badge/recipe-serapis-green.svg)](https://anaconda.org/conda-forge/serapis) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![Downloads](https://pepy.tech/badge/serapis-nile)](https://pepy.tech/project/serapis-nile) [![Downloads](https://pepy.tech/badge/serapis-nile/month)](https://pepy.tech/project/serapis-nile)  [![Downloads](https://pepy.tech/badge/serapis-nile/week)](https://pepy.tech/project/serapis-nile)  ![PyPI - Downloads](https://img.shields.io/pypi/dd/serapis-nile?color=blue&style=flat-square) ![GitHub all releases](https://img.shields.io/github/downloads/MAfarrag/serapis/total) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![PyPI version](https://badge.fury.io/py/serapis.svg)](https://badge.fury.io/py/serapis) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/serapis/badges/version.svg)](https://anaconda.org/conda-forge/serapis) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![Join the chat at https://gitter.im/serapis/serapis](https://badges.gitter.im/serapis/serapis.svg)](https://gitter.im/serapis/serapis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-serapis-green.svg)](https://anaconda.org/conda-forge/serapis) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![Downloads](https://pepy.tech/badge/serapis)](https://pepy.tech/project/serapis) [![Downloads](https://pepy.tech/badge/serapis/month)](https://pepy.tech/project/serapis)  [![Downloads](https://pepy.tech/badge/serapis/week)](https://pepy.tech/project/serapis)  ![PyPI - Downloads](https://img.shields.io/pypi/dd/serapis?color=blue&style=flat-square) ![GitHub all releases](https://img.shields.io/github/downloads/Serapieum-of-alex/serapis/total) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![PyPI version](https://badge.fury.io/py/serapis.svg)](https://badge.fury.io/py/serapis) [![Anaconda-Server Badge](https://anaconda.org/conda-forge/serapis/badges/version.svg)](https://anaconda.org/conda-forge/serapis) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/serapis.svg)](https://anaconda.org/conda-forge/serapis) [![Join the chat at https://gitter.im/serapis/serapis](https://badges.gitter.im/serapis/serapis.svg)](https://gitter.im/serapis/serapis?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) |
 
 
 ![serapis](/docs/img/serapis4.png) ![serapis](/docs/img/name.png)
@@ -77,7 +73,7 @@ conda search serapis --channel conda-forge
 ## Install from Github
 to install the last development to time you can install the library from github
 ```
-pip install git+https://github.com/MAfarrag/serapis
+pip install git+https://github.com/Serapieum-of-alex/serapis
 ```
 
 ## pip
