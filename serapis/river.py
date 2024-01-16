@@ -565,12 +565,12 @@ class River:
         )
 
     def read_xs(self, path: str):
-        """readXS.
+        """read_xs.
 
             Read crossSections file
 
-        readXS method reads the cross-section data of the river and assigns it
-        to an attribute "Crosssections" of type dataframe
+        read_xs method reads the cross-section data of the river and assigns it
+        to an attribute "Crosssections" of type dataframe.
 
         Parameters
         ----------
