@@ -6,10 +6,10 @@ from serapis.event import Event, Catalog, EventData
 
 
 def test_create_event_instance(event_instance_attrs: List[str]):
-    event_obg = Event(f"test")
-    assert event_obg.depth_prefix == "DepthMax"
-    assert isinstance(event_obg.reference_index, DataFrame)
-    assert all([i in event_obg.__dict__.keys() for i in event_instance_attrs])
+    event_obj = Event(f"test")
+    assert event_obj.depth_prefix == "DepthMax"
+    assert isinstance(event_obj.reference_index, DataFrame)
+    assert all([i in event_obj.__dict__.keys() for i in event_instance_attrs])
 
 
 def test_create_from_overtopping(overtopping_file: str):
