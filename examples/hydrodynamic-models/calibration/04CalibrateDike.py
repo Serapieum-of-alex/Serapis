@@ -17,7 +17,7 @@ from serapis.event import Event as E
 
 # import serapis.visualise.Visualizer as V
 # %% Paths
-CompP = r"F:\01Algorithms\Hydrology\Serapis"
+CompP = r"F:\algorithms\Hydrology\Serapis"
 os.chdir(CompP)
 rpath = "examples/Hydrodynamic models/test_case/"
 # rpath = r"F:\02Case-studies"

@@ -31,7 +31,7 @@ Outputs:
 """
 import os
 
-CompP = r"F:\01Algorithms\Hydrology\Serapis"
+CompP = r"F:\algorithms\Hydrology\Serapis"
 os.chdir(CompP)
 import serapis.calibration as RC
 import serapis.inputs as IN

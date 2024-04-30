@@ -13,7 +13,7 @@ import serapis.calibration as RC
 import serapis.river as R
 from cleopatra.styles import Styles
 
-CompP = r"C:\MyComputer\01Algorithms\Hydrology\Serapis/"
+CompP = r"C:\MyComputer\algorithms\Hydrology\Serapis/"
 # %% paths
 """ these following paths are for the inputs that does not change """
 hm_path = CompP + r"examples\Hydrodynamic models\data\hm/"

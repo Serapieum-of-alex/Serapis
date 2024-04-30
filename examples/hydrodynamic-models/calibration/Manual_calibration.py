@@ -75,7 +75,7 @@ start = "1955-1-1"
 rrmstart = "1955-1-1"
 River = R.River("HM", version=3, start=start, rrm_start=rrmstart)
 # %%
-path = r"C:\gdrive\01Algorithms\Hydrology\serapis\examples\Hydrodynamic-models\test_case\processing\def1D-1segment.yaml"
+path = r"C:\gdrive\algorithms\Hydrology\serapis\examples\Hydrodynamic-models\test_case\processing\def1D-1segment.yaml"
 River.read_config(path)
 # %%
 # read the data of the river

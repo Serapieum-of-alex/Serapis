@@ -18,7 +18,7 @@ import matplotlib.pyplot as plt
 import serapis.calibration as RC
 
 """change directory to the processing folder inside the project folder"""
-os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Serapis")
+os.chdir(r"C:\MyComputer\algorithms\Hydrology\Serapis")
 rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
 saveto = rpath
 # %% Links
