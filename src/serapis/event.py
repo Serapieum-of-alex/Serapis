@@ -187,6 +187,13 @@ class EventData:
         self.reaches = self.data.get("reaches")
         self.overtopping = self._get_overtopping()
 
+    # def __post_init__(self):
+    #     """Parse event data."""
+    #     self.day = self.data.get("day")
+    #     self.depth = self.data.get("depth")
+    #     self.reaches = self.data.get("reaches")
+    #     self.overtopping = self._get_overtopping()
+
     def _get_overtopping(self):
         over_top = self.data.get("overtopping")
         df = pd.DataFrame(columns=["cross-sections", "overtopping"])
@@ -629,7 +636,7 @@ class Event:
 
         Returns
         -------
-        extracted_values: [Dict]
+        Catalog:
             dictionary with a list of values in the basemap as keys and for each key a list of all the intersected
             values in the maps from the path.
         """
