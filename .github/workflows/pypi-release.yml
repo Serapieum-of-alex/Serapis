@@ -28,7 +28,7 @@ jobs:
                 cache-write: ${{ github.event_name == 'push' && github.ref_name == 'main' }}
 
             - name: Build package
-              run: pixi run -e dev build-dist
+              run: pixi run -e default build-dist
 
             - name: Publish package to PyPI
               uses: pypa/gh-action-pypi-publish@ed0c53931b1dc9bd32cbe73a98c7f6766f8a527e #release/v1
