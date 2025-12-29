@@ -207,7 +207,7 @@ class Inputs(River):
             method=method,
             # estimate_parameters=estimate_parameters,
             quartile=quartile,
-            significance_level=significance_level,
+            alpha=significance_level,
         )
 
         # Output file

@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
 from pyramids.dataset import Dataset
-from cleopatra.statistics import Statistic
+from cleopatra.statistical_glyph import StatisticalGlyph as Statistic
 
 
 class Catalog:
@@ -741,9 +741,11 @@ class Event:
             extracted_values = [j for j in extracted_values if j < upper_bound]
 
         hist = Statistic(extracted_values)
+        ndims = extracted_values.ndim
+        colors = ndims * ["#0504aa"]
         fig, ax, opts = hist.histogram(
             bins=15,
-            color="#0504aa",
+            color=colors,
             alpha=0.7,
             rwidth=0.85,
             ylabel="Frequency",

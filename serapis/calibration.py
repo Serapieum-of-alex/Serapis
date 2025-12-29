@@ -6,7 +6,7 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
-import statista.metrics as pf
+import statista.descriptors as pf
 from geopandas import GeoDataFrame
 from loguru import logger
 from matplotlib.figure import Figure
@@ -130,7 +130,7 @@ class Calibration(River):
     def read_gauges_table(self, path: str):
         """ReadGaugesTable.
 
-        readGaugesTable reads the table of the gauges
+        read_gauges_table reads the table of the gauges
 
         Parameters
         ----------
@@ -374,7 +374,7 @@ class Calibration(River):
         file_extension: str = ".txt",
         gauge_date_format="%Y-%m-%d",
     ):
-        """readObservedQ.
+        """read_observed_q.
 
             ReadObservedQ method reads discharge data and, stores it in a dataframe
             attribute "q_gauges"
@@ -1831,7 +1831,7 @@ class Calibration(River):
         """
         if not isinstance(self.wl_gauges, DataFrame):
             raise ValueError(
-                "wl_gauges variable does not exist please read the water level gauges with 'readObservedWL' method"
+                "wl_gauges variable does not exist please read the water level gauges with 'read_observed_wl' method"
             )
 
         if not isinstance(self.wl_hm, DataFrame):

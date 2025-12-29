@@ -16,7 +16,7 @@ import pandas as pd
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
-from statista import metrics as metrics
+from statista import descriptors as metrics
 from statista.distributions import Distributions
 from serapis.serapis_warnings import SilencePandasWarning
 from serapis.saintvenant import SaintVenant
@@ -42,6 +42,7 @@ class River:
         dx={"default": 500, "type": int},
         start={"default": "1950-1-1", "type": str},
         days={"default": 36890, "type": int},  # 100 years
+        end={"default": "1950-1-1", "type": str},
         rrm_start={"default": None, "type": str},
         rrm_days={"default": 36890, "type": int},  # 100 years
         left_overtopping_suffix={"default": "_left.txt", "type": str},
@@ -1768,7 +1769,6 @@ class River:
             RP5000=0,
         )
         cdf = 1 - (1 / T)
-        dist = Distributions(distribution)
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
                 col1 = self.SP.columns.to_list().index("RP2")
@@ -1779,9 +1779,10 @@ class River:
                 if distribution == "GEV":
                     parameters["shape"] = self.SP.loc[i, "c"]
 
+                dist = Distributions(distribution, parameters=parameters)
                 self.SP.loc[
                     i, self.SP.keys()[col1:].tolist()
-                ] = dist.theoretical_estimate(parameters, cdf)
+                ] = dist.inverse_cdf(cdf)
 
     def get_return_period(
         self,
@@ -1814,8 +1815,6 @@ class River:
                 "Please read the statistical properties file for the catchment first"
             )
 
-        dist = Distributions(distribution)
-
         try:
             loc = np.where(self.SP["id"] == sub_id)[0][0]
             parameter = dict(
@@ -1825,7 +1824,15 @@ class River:
             if distribution == "GEV":
                 parameter["shape"] = self.SP.loc[loc, "c"]
 
-            rp = dist.get_rp(parameter, q)
+            dist = Distributions(distribution, parameters=parameter)
+
+            if isinstance(q, (int, float)):
+                q_list = [q]
+
+            rp = dist.return_period(parameter, q_list)
+
+            if isinstance(q, (int, float)):
+                rp = rp[0]
 
             return rp
         except IndexError:
