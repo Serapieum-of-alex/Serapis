@@ -10683,8 +10683,8 @@ packages:
   requires_python: '>=3.11,<4.0'
 - pypi: ./
   name: serapis
-  version: 0.1.0
-  sha256: 2c891bcb46b828a4384041703c56f980e23c822e9dc4a566e6f978c8fea1a6ff
+  version: 0.2.0
+  sha256: 012167c9f933c256ec0636a4d8e45544f9ca307fbda204f26a519e93f0caf191
   requires_dist:
   - geopandas>=1.0.0
   - numpy>=2.0.0
