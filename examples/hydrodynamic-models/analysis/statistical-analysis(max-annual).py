@@ -9,11 +9,11 @@ matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 import pandas as pd
 
-import Hapi.hm.calibration as RC
-import Hapi.hm.river as R
-from Hapi.plot.visualizer import Visualize as V
+import serapis.calibration as RC
+import serapis.river as R
+from cleopatra.styles import Styles
 
-CompP = r"C:\MyComputer\01Algorithms\Hydrology\Hapi/"
+CompP = r"C:\MyComputer\algorithms\Hydrology\Serapis/"
 # %% paths
 """ these following paths are for the inputs that does not change """
 hm_path = CompP + r"examples\Hydrodynamic models\data\hm/"
@@ -114,7 +114,7 @@ for i in range(len(Qgauges)):
         Rhine_obs.SP.loc[Rhine_obs.SP["id"] == SubID, xlabels].values.tolist()[0],
         zorder=5,
         color=color3,
-        linestyle=V.getLineStyle(0),
+        linestyle=Styles.get_line_style(0),
         linewidth=5,
         label="GRDC",
     )
@@ -124,7 +124,7 @@ for i in range(len(Qgauges)):
         Rhine.SP.loc[Rhine.SP["id"] == SubID, xlabels].values.tolist()[0],
         zorder=1,
         color=color2,
-        linestyle=V.getLineStyle(9),
+        linestyle=Styles.get_line_style(9),
         linewidth=5,
         label="HM ",
     )
@@ -184,7 +184,7 @@ for i in range(len(Qgauges)):
         Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
         zorder=5,
         color=color3,
-        linestyle=V.getLineStyle(0),
+        linestyle=Styles.get_line_style(0),
         linewidth=5,
         label="Observed",
     )
@@ -198,7 +198,7 @@ for i in range(len(Qgauges)):
         Rhine.Qrp.loc[SubID, :].values.tolist(),
         zorder=1,
         color=color2,
-        linestyle=V.getLineStyle(9),
+        linestyle=Styles.get_line_style(9),
         linewidth=5,
         label="HM",
     )
@@ -239,7 +239,7 @@ ax[0, 0].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=3,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -254,7 +254,7 @@ ax[0, 0].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=2,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -297,7 +297,7 @@ ax[0, 1].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -312,7 +312,7 @@ ax[0, 1].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -360,7 +360,7 @@ ax[0, 2].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -375,7 +375,7 @@ ax[0, 2].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -420,7 +420,7 @@ ax[1, 0].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -435,7 +435,7 @@ ax[1, 0].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -480,7 +480,7 @@ ax[1, 1].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -495,7 +495,7 @@ ax[1, 1].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -540,7 +540,7 @@ ax[1, 2].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -555,7 +555,7 @@ ax[1, 2].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -600,7 +600,7 @@ ax[2, 0].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -615,7 +615,7 @@ ax[2, 0].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -660,7 +660,7 @@ ax[2, 1].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -675,7 +675,7 @@ ax[2, 1].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )
@@ -719,7 +719,7 @@ ax[2, 2].plot(
     Rhine_obs.Qrp.loc[SubID, :].values.tolist(),
     zorder=5,
     color=color3,
-    linestyle=V.getLineStyle(0),
+    linestyle=Styles.get_line_style(0),
     linewidth=linewidth,
     label="Observed",
 )
@@ -734,7 +734,7 @@ ax[2, 2].plot(
     Rhine.Qrp.loc[SubID, :].values.tolist(),
     zorder=1,
     color=color2,
-    linestyle=V.getLineStyle(9),
+    linestyle=Styles.get_line_style(9),
     linewidth=linewidth,
     label="HM",
 )

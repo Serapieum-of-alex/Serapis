@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from loguru import logger
 from osgeo import gdal
-from scipy.stats import gumbel_r
+from statista.distributions import Distributions
 from statista.eva import ams_analysis
 from serapis.river import River
 
@@ -207,7 +207,7 @@ class Inputs(River):
             method=method,
             # estimate_parameters=estimate_parameters,
             quartile=quartile,
-            significance_level=significance_level,
+            alpha=significance_level,
         )
 
         # Output file
@@ -412,13 +412,14 @@ class Inputs(River):
                         )[0][0]
 
                     # to get the Non-Exceedance probability for a specific Value.
-                    F = gumbel_r.cdf(
-                        max_values[i],
+                    parameters = dict(
                         loc=distribution_properties.loc[loc, "loc"],
                         scale=distribution_properties.loc[loc, "scale"],
                     )
-                    # then calculate the return_period (return period) return_period = 1/(1-F).
-                    return_period.append(round(1 / (1 - F), 2))
+                    dist = Distributions("Gumbel", max_values[i])
+                    rp = dist.get_rp(parameters)
+
+                    return_period.append(round(rp, 2))
 
             try:
                 retun_period_map = np.ones((rows, cols), dtype=np.float32) * 0

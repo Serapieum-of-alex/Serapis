@@ -13,13 +13,13 @@ import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
-import Hapi.hm.calibration as RC
-import Hapi.hm.river as R
-from Hapi.hm.interface import Interface
-from Hapi.visualizer import Visualize as V
+import serapis.calibration as RC
+import serapis.river as R
+from serapis.interface import Interface
+from serapis.plot.visualizer import Visualize as V
 
 """change directory to the processing folder inside the project folder"""
-os.chdir(r"F:\01Algorithms\Hydrology\HAPI")
+os.chdir(r"F:\algorithms\Hydrology\Serapis")
 rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
 saveto = rpath
 # %% gauges

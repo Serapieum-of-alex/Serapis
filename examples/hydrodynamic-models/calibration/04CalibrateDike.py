@@ -2,8 +2,6 @@
 
 @author: mofarrag
 """
-# from IPython import get_ipython
-# get_ipython().magic('reset -f')
 import os
 
 # import numpy as np
@@ -13,13 +11,13 @@ import os
 # from matplotlib import animation``
 # import datetime as dt
 # import math
-# from Hapi.sm import performancecriteria as Pf
-import Hapi.hm.river as R
-from Hapi.hm.event import Event as E
+# from statista.metrics import performancecriteria as Pf
+import serapis.river as R
+from serapis.event import Event as E
 
-# import Hapi.Visualizer as V
+# import serapis.visualise.Visualizer as V
 # %% Paths
-CompP = r"F:\01Algorithms\Hydrology\HAPI"
+CompP = r"F:\algorithms\Hydrology\Serapis"
 os.chdir(CompP)
 rpath = "examples/Hydrodynamic models/test_case/"
 # rpath = r"F:\02Case-studies"

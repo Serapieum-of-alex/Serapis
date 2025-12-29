@@ -1,0 +1,208 @@
+[project]
+name = "serapis"
+version = "0.2.0"
+description = "Flood simulation model"
+readme = {file = "README.md", content-type = "text/markdown"}
+authors = [
+    { name = "Mostafa Farrag", email = "moah.farrag@gmail.com" }
+]
+license = {text = "GNU General Public License v3"}
+keywords = ["Hydraulics", "Flood model", "Inundation model"]
+
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Natural Language :: English",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Scientific/Engineering :: GIS",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Developers",
+]
+
+requires-python = ">= 3.11, <4"
+
+dependencies = [
+    "geopandas >=1.0.0",
+    "numpy >=2.0.0",
+    "pandas >=2.0.0",
+    "loguru >=0.7.3",
+    "cleopatra ==0.6.0",
+    "pyramids-gis ==0.8.0",
+    "serapeum_utils ==0.2.0",
+    "statista ==0.6.3",
+    "matplotlib >=3.7.2",
+    "statsmodels >=0.14.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "nbval >=0.11.0",
+    "pre-commit >=3.7.1",
+    "pre-commit-hooks >=4.6.0",
+    "pytest >=8.2.2",
+    "pytest-cov >= 5.0.0",
+    "coverage",
+    "build>=1.0.0",
+    "twine>=5.0.0",
+    "pip",
+    "jupyterlab",
+    "notebook",
+    "jupyter",
+    "commitizen>=4.8.4",
+    "mypy>=1.19.0"
+]
+docs = [
+    "mkdocs >=1.5.3",
+    "mkdocs-material >=9.5.3",
+    "mkdocstrings >=0.24.0",
+    "mkdocstrings-python >=1.7.5",
+    "mike >=2.1.3",
+    "mkdocs-jupyter >=0.25.1",
+    "mkdocs-autorefs  >=1.2",
+    "mkdocs-macros-plugin  >=1.3.7",
+    "mkdocs-table-reader-plugin  >=3.1.0",
+    "mkdocs-mermaid2-plugin  >=1.2.1",
+    "jupyter-contrib-nbextensions  >=0.7.0",
+    "mkdocs-panzoom-plugin",
+    "notebook<7.0",
+]
+
+[project.urls]
+homepage = "https://github.com/Serapieum-of-alex/serapis"
+repository = "https://github.com/Serapieum-of-alex/serapis"
+documentation = "https://serapieum-of-alex.github.io/serapis"
+Changelog = "https://github.com/Serapieum-of-alex/serapis/docs/change-log.md"
+
+
+[build-system]
+requires = ["setuptools>=80.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["serapis", "serapis.*"]
+
+[tool.flake8]
+ignore = ["E203", "E266", "E501", "W503", "E722", "C901", "E741", "E731"]
+max-line-length = 88
+max-complexity = 18
+select = "B,C,E,F,W,T4"
+
+[tool.black]
+profile = "flake8"
+line-length = 88
+skip-string-normalization = true
+
+[tool.isort]
+profile = "black"
+line_length = 88
+multi_line_output = 3
+
+
+[tool.commitizen]
+name = "cz_conventional_commits"
+version_provider = "pep621"
+tag_format = "$version"
+changelog_file = "docs/change-log.md"
+update_changelog_on_bump = false
+style = [
+    ["qmark", "fg:#ff9d00 bold"],
+    ["question", "bold"],
+    ["answer", "fg:#ff9d00 bold"],
+    ["pointer", "fg:#ff9d00 bold"],
+    ["highlighted", "fg:#ff9d00 bold"],
+    ["selected", "fg:#cc5454"],
+    ["separator", "fg:#cc5454"],
+    ["instruction", ""],
+    ["text", ""],
+    ["disabled", "fg:#858585 italic"]
+]
+
+[tool.mypy]
+python_version = "3.12"
+warn_return_any = false
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+warn_redundant_casts = true
+warn_unused_ignores = false
+warn_no_return = true
+warn_unreachable = true
+strict_optional = true
+ignore_missing_imports = true
+no_implicit_optional = false
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "setup"
+ignore_errors = true
+
+[[tool.mypy.overrides]]
+module = "tsvkw.toetsmodel.models"
+# Complex parsing logic with dynamic types
+warn_return_any = false
+disallow_any_expr = false
+
+[[tool.mypy.overrides]]
+module = "tsvkw.config"
+# Configuration loading from YAML - unavoidable Any returns
+warn_return_any = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+markers = [
+    "slow: mark test as slow (deselect with '-m \"not slow\"')",
+    "fast: mark test as fast (deselect with '-m \"not fast\"')",
+    "plot: test plotting function optional package (deselect with '-m \"not plot\"')"
+]
+
+
+[tool.pixi.workspace]
+channels = ["conda-forge"]
+platforms = ["win-64", "linux-64"]
+
+[tool.pixi.pypi-dependencies]
+serapis = { path = ".", editable = true }
+
+[tool.pixi.tasks]
+test-all = { cmd = "pytest -vvv --cov=src/serapis -sv --cov-report=xml --cov-report=term-missing", description = "Run all testsuite" }
+notebooks = { cmd = "pytest --nbval --nbval-lax --verbose examples/notebooks", description = "check notebooks" }
+build-dist = { cmd = "python -m build", description = "Build sdist and wheel for PyPI" }
+publish-pypi = { cmd = "twine upload --non-interactive --repository pypi dist/*", depends-on = ["build-dist"], description = "Build and upload package to PyPI" }
+cz-changelog = { cmd = "cz changelog", description = "Generate changelog using Commitizen" }
+cz-bump = { cmd = "cz bump", description = "Bump version using Commitizen" }
+
+
+[tool.pixi.environments]
+default = {features = ["dev"], solve-group = "default" }
+docs = { features = ["docs"], solve-group = "docs" }
+py311 = { features = ["py311", "dev"], solve-group = "py311" }
+py312 = { features = ["py312", "dev"], solve-group = "py312" }
+py313 = { features = ["py313", "dev"], solve-group = "py313" }
+
+
+[tool.pixi.feature.py311.dependencies]
+python = "3.11.*"
+[tool.pixi.feature.py312.dependencies]
+python = "3.12.*"
+[tool.pixi.feature.py313.dependencies]
+python = "3.13.*"
+
+
+[tool.pixi.dependencies]
+gdal = ">=3.10.0,<4"
+libgdal-netcdf = ">=3.10.0,<4"
+libgdal-hdf4 = ">=3.10.0,<4"
+

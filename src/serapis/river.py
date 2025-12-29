@@ -15,13 +15,12 @@ import numpy as np
 import pandas as pd
 from matplotlib.figure import Figure
 from pandas.core.frame import DataFrame
-from scipy.stats import genextreme, gumbel_r
 from serapeum_utils.utils import class_attr_initialize, class_method_parse
-from statista import metrics as metrics
-from statista.distributions import GEV, Gumbel
-
+from statista import descriptors as metrics
+from statista.distributions import Distributions
 from serapis.serapis_warnings import SilencePandasWarning
 from serapis.saintvenant import SaintVenant
+from cleopatra.styles import Styles
 from serapis.plot.visualizer import Visualize as V
 
 SilencePandasWarning()
@@ -43,6 +42,7 @@ class River:
         dx={"default": 500, "type": int},
         start={"default": "1950-1-1", "type": str},
         days={"default": 36890, "type": int},  # 100 years
+        end={"default": "1950-1-1", "type": str},
         rrm_start={"default": None, "type": str},
         rrm_days={"default": 36890, "type": int},  # 100 years
         left_overtopping_suffix={"default": "_left.txt", "type": str},
@@ -566,12 +566,12 @@ class River:
         )
 
     def read_xs(self, path: str):
-        """readXS.
+        """read_xs.
 
             Read crossSections file
 
-        readXS method reads the cross-section data of the river and assigns it
-        to an attribute "Crosssections" of type dataframe
+        read_xs method reads the cross-section data of the river and assigns it
+        to an attribute "Crosssections" of type dataframe.
 
         Parameters
         ----------
@@ -1415,7 +1415,6 @@ class River:
     def storage_cell(self, start: str = "", end: str = "", fmt: str = "%Y-%m-%d"):
         """storage_cell.
 
-
         Parameters
         ----------
         start: [str]
@@ -1769,29 +1768,21 @@ class River:
             RP1000=0,
             RP5000=0,
         )
-        F = 1 - (1 / T)
+        cdf = 1 - (1 / T)
         for i in range(len(self.SP)):
             if self.SP.loc[i, "loc"] != -1:
                 col1 = self.SP.columns.to_list().index("RP2")
+                parameters = {
+                    "loc": self.SP.loc[i, "loc"],
+                    "scale": self.SP.loc[i, "scale"],
+                }
                 if distribution == "GEV":
-                    dist = GEV()
-                    parameters = {
-                        "shape": self.SP.loc[i, "c"],
-                        "loc": self.SP.loc[i, "loc"],
-                        "scale": self.SP.loc[i, "scale"],
-                    }
-                    self.SP.loc[
-                        i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theoretical_estimate(parameters, F)
-                else:
-                    dist = Gumbel()
-                    parameters = {
-                        "loc": self.SP.loc[i, "loc"],
-                        "scale": self.SP.loc[i, "scale"],
-                    }
-                    self.SP.loc[
-                        i, self.SP.keys()[col1:].tolist()
-                    ] = dist.theoretical_estimate(parameters, F)
+                    parameters["shape"] = self.SP.loc[i, "c"]
+
+                dist = Distributions(distribution, parameters=parameters)
+                self.SP.loc[
+                    i, self.SP.keys()[col1:].tolist()
+                ] = dist.inverse_cdf(cdf)
 
     def get_return_period(
         self,
@@ -1818,35 +1809,32 @@ class River:
         return period:[Float]
             return period calculated for the given discharge using the parameters of the distribution for the catchment.
         """
+
         if not isinstance(self.SP, DataFrame):
             raise ValueError(
                 "Please read the statistical properties file for the catchment first"
             )
+
         try:
             loc = np.where(self.SP["id"] == sub_id)[0][0]
+            parameter = dict(
+                loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+            )
+
             if distribution == "GEV":
-                # dist = GEV()
-                # rp = dist.getRP(
-                #     self.SP.loc[loc, "c"],
-                #     self.SP.loc[loc, "loc"],
-                #     self.SP.loc[loc, "scale"],
-                #     Q
-                # )
+                parameter["shape"] = self.SP.loc[loc, "c"]
 
-                F = genextreme.cdf(
-                    q,
-                    c=self.SP.loc[loc, "c"],
-                    loc=self.SP.loc[loc, "loc"],
-                    scale=self.SP.loc[loc, "scale"],
-                )
-            else:
-                # dist = Gumbel()
-                # rp = dist.getRP(self.SP.loc[loc, "loc"], self.SP.loc[loc, "scale"], Q)
-                F = gumbel_r.cdf(
-                    q, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-                )
+            dist = Distributions(distribution, parameters=parameter)
 
-            return 1 / (1 - F)
+            if isinstance(q, (int, float)):
+                q_list = [q]
+
+            rp = dist.return_period(parameter, q_list)
+
+            if isinstance(q, (int, float)):
+                rp = rp[0]
+
+            return rp
         except IndexError:
             return -1
 
@@ -1879,20 +1867,19 @@ class River:
                 "the SP dataframe should have a column 'id' containing the id of the gauges"
             )
 
-        F = 1 - (1 / return_period)
+        cdf = 1 - (1 / return_period)
+        dist = Distributions(distribution)
+
         try:
             loc = np.where(self.SP["id"] == sub_id)[0][0]
+            parameter = dict(
+                loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
+            )
+
             if distribution == "GEV":
-                q = genextreme.ppf(
-                    F,
-                    c=self.SP.loc[loc, "c"],
-                    loc=self.SP.loc[loc, "loc"],
-                    scale=self.SP.loc[loc, "scale"],
-                )
-            else:
-                q = gumbel_r.ppf(
-                    F, loc=self.SP.loc[loc, "loc"], scale=self.SP.loc[loc, "scale"]
-                )
+                parameter["shape"] = self.SP.loc[loc, "c"]
+
+            q = dist.theoretical_estimate(parameter, cdf)
             return q
         except:
             return -1
@@ -1939,7 +1926,7 @@ class River:
             GetCapacity method calculates the discharge that is enough to fill the cross-section using kinematic wave
             approximation (using a bed slope with the manning equation)
 
-            In order to calculate the return period coresponding to each cross-section discharge, each cross-section
+            In order to calculate the return period corresponding to each cross-section discharge, each cross-section
             needs to be assigned the id of a specific gauge, as the statistical analysis is being done for the gauges
             only, so the distribution parameters are estimated only for the gauges.
 
@@ -1962,7 +1949,7 @@ class River:
             attribute in the River object in a columns with the given column_name
         column_name+"RP":[dataframe column]
             if you already rad the statistical properties another column containing
-            the coresponding return period to the discharge,
+            the corresponding return period to the discharge,
             the calculated return period will be stored in a column with a name
             the given column_name+"RP", if the column_name was QC then the discharge
             will be in a Qc columns and the return period will be in QcRP column
@@ -2021,7 +2008,7 @@ class River:
                 if "gauge" not in self.cross_sections.columns.tolist():
                     raise ValueError(
                         "To calculate the return period for each cross-section, a column with "
-                        "the coresponding gauge-id should be in the cross-section file"
+                        "the corresponding gauge-id should be in the cross-section file"
                     )
                 rp = self.get_return_period(
                     self.cross_sections.loc[i, "gauge"],
@@ -4008,7 +3995,9 @@ class Reach(River):
         elif column_name == "h":
             self.resampled_h.loc[:, xsid] = q.tolist()
 
-    def detailed_statistical_calculation(self, return_period: Union[list, np.ndarray]):
+    def detailed_statistical_calculation(
+        self, return_period: Union[list, np.ndarray], distribution: str = "GEV"
+    ):
         """detailed_statistical_calculation.
 
             detailed_statistical_calculation method calculates the discharge related to a specific given return period.
@@ -4017,6 +4006,8 @@ class Reach(River):
         ----------
         return_period : TYPE
             DESCRIPTION.
+        distribution: [str]
+            distribution name, ["GEV", "Gumbel", "Exponential", "Normal"]. Default is "GEV"
 
         Returns
         -------
@@ -4024,12 +4015,19 @@ class Reach(River):
         """
         assert hasattr(self, "SP"), "you "
         return_period = np.array(return_period)
-        F = 1 - (1 / return_period)
+        cdf = 1 - (1 / return_period)
         self.Qrp = pd.DataFrame()
         self.Qrp["RP"] = return_period
-        self.Qrp["Q"] = gumbel_r.ppf(
-            F, loc=self.SP.loc[0, "loc"], scale=self.SP.loc[0, "scale"]
+
+        dist = Distributions(distribution)
+        parameters = dict(
+            loc=self.SP.loc[0, "loc"],
+            scale=self.SP.loc[0, "scale"],
         )
+        if distribution == "GEV":
+            parameters["shape"] = self.SP.loc[0, "shape"]
+
+        self.Qrp["Q"] = dist.theorical_quantile(parameters, cdf)
 
     def _get_reach_overtopping(
         self, left: bool, event_days: List[int], delimiter: str = r"\s+"
@@ -4883,7 +4881,7 @@ class Reach(River):
                     label="RIM",
                     zorder=self.hmorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(6),
+                    linestyle=Styles.get_line_style(6),
                     color=self.hmcolor,
                 )
             except KeyError:
@@ -4906,7 +4904,7 @@ class Reach(River):
                         label="BC",
                         zorder=self.ushorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.ushstyle),
+                        linestyle=Styles.get_line_style(self.ushstyle),
                         color=self.ushcolor,
                     )
                 # laterals
@@ -4919,7 +4917,7 @@ class Reach(River):
                         label="laterals",
                         zorder=self.latorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.latstyle),
+                        linestyle=Styles.get_line_style(self.latstyle),
                         color=self.latcolor,
                     )
                 if self.plottotal:
@@ -4930,7 +4928,7 @@ class Reach(River):
                             label="US/BC + laterals",
                             zorder=self.totalorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.totalstyle),
+                            linestyle=Styles.get_line_style(self.totalstyle),
                             color=self.totalcolor,
                         )
                     except AttributeError:
@@ -4946,7 +4944,7 @@ class Reach(River):
                         label="US Hydrograph",
                         zorder=self.ushorder,
                         linewidth=self.linewidth,
-                        linestyle=V.getLineStyle(self.ushstyle),
+                        linestyle=Styles.get_line_style(self.ushstyle),
                         color=self.ushcolor,
                     )
                 except KeyError:
@@ -4966,7 +4964,7 @@ class Reach(River):
                     linewidth=self.linewidth,
                     zorder=self.gaugeorder,
                     color=self.gaugecolor,
-                    linestyle=V.getLineStyle(self.gaugestyle),
+                    linestyle=Styles.get_line_style(self.gaugestyle),
                 )
 
             # specific XS
@@ -4980,7 +4978,7 @@ class Reach(River):
                     zorder=self.xsorder,
                     linewidth=self.linewidth,
                     color=self.xscolor,
-                    linestyle=V.getLineStyle(self.xslinestyle),
+                    linestyle=Styles.get_line_style(self.xslinestyle),
                 )
             # RRM
             if self.plotrrm:
@@ -4991,7 +4989,7 @@ class Reach(River):
                             label="mHM-RIM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.rrmlinestyle),
+                            linestyle=Styles.get_line_style(self.rrmlinestyle),
                             color=self.rrmcolor,
                         )
                     except KeyError:
@@ -5006,7 +5004,7 @@ class Reach(River):
                             label="mHM-mHM Loc",
                             zorder=self.rrmorder,
                             linewidth=self.linewidth,
-                            linestyle=V.getLineStyle(self.rrm2linesytle),
+                            linestyle=Styles.get_line_style(self.rrm2linesytle),
                             color=self.rrm2color,
                         )
                     except KeyError:
@@ -5021,7 +5019,7 @@ class Reach(River):
                 label="RIM",
                 zorder=3,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(6),
+                linestyle=Styles.get_line_style(6),
                 color=self.hmcolor,
             )
             # plot the gauge data
@@ -5162,7 +5160,7 @@ class Reach(River):
                     label="BC",
                     zorder=self.ushorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.ushstyle),
+                    linestyle=Styles.get_line_style(self.ushstyle),
                     color=self.ushcolor,
                 )
             # laterals
@@ -5172,7 +5170,7 @@ class Reach(River):
                     label="laterals Sum \n up to - XS-" + str(specific_xs),
                     zorder=self.latorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.latstyle),
+                    linestyle=Styles.get_line_style(self.latstyle),
                     color=self.latcolor,
                 )
             if self.plottotal:
@@ -5183,7 +5181,7 @@ class Reach(River):
                     label="US/BC \n+ laterals",
                     zorder=self.totalorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.totalstyle),
+                    linestyle=Styles.get_line_style(self.totalstyle),
                     color=self.totalcolor,
                 )
 
@@ -5194,7 +5192,7 @@ class Reach(River):
                 label="US Hydrograph",
                 zorder=self.ushorder,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(self.ushstyle),
+                linestyle=Styles.get_line_style(self.ushstyle),
                 color=self.ushcolor,
             )
 
@@ -5208,7 +5206,7 @@ class Reach(River):
                 label="RIM",
                 zorder=self.hmorder,
                 linewidth=self.linewidth,
-                linestyle=V.getLineStyle(6),
+                linestyle=Styles.get_line_style(6),
                 color=self.hmcolor,
             )
         # RRM
@@ -5220,7 +5218,7 @@ class Reach(River):
                     label="mHM",
                     zorder=self.rrmorder,
                     linewidth=self.linewidth,
-                    linestyle=V.getLineStyle(self.rrmlinesytle),
+                    linestyle=Styles.get_line_style(self.rrmlinesytle),
                     color=self.rrmcolor,
                 )
             except KeyError:
@@ -5488,11 +5486,11 @@ class Reach(River):
 
         ax.plot(
             self.xs_water_level.loc[start:end, gauge_xs],
-            label="RIM",
+            label="Hydraulic model",
             zorder=self.hmorder,
             linewidth=self.linewidth,
             color=self.hmcolor,
-            linestyle=V.getLineStyle(self.hmstyle),
+            linestyle=Styles.get_line_style(self.hmstyle),
         )
 
         if self.plotgauge:
@@ -5502,13 +5500,13 @@ class Reach(River):
                 zorder=self.gaugeorder,
                 linewidth=self.linewidth,
                 color=self.gaugecolor,
-                linestyle=V.getLineStyle(self.gaugestyle),
+                linestyle=Styles.get_line_style(self.gaugestyle),
             )
 
         start, end = ax.get_xlim()
         ax.xaxis.set_ticks(np.linspace(start, end, self.nxlabels))
 
-        ax.set_title("Water Level - " + gauge_name, fontsize=20)
+        ax.set_title(f"Water Level - {gauge_name}", fontsize=20)
         plt.legend(fontsize=self.legendsize)
         ax.set_xlabel("Time", fontsize=15)
         ax.set_ylabel("Water Level m", fontsize=15)

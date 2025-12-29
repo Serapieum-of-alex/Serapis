@@ -5,9 +5,9 @@
 # import numpy as np
 # import pandas as pd
 # import datetime as dt
-from Hapi.hm.river import River
+from serapis.river import River
 
-path = "F:/01Algorithms/Hydrology/HAPI/examples/"
+path = "F:/algorithms/Hydrology/HAPI/examples/"
 # %% create the River object
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"

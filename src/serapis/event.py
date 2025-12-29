@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 from pandas.core.frame import DataFrame
 from pyramids.dataset import Dataset
-from cleopatra.statistics import Statistic
+from cleopatra.statistical_glyph import StatisticalGlyph as Statistic
 
 
 class Catalog:
@@ -186,6 +186,13 @@ class EventData:
         self.depth = self.data.get("depth")
         self.reaches = self.data.get("reaches")
         self.overtopping = self._get_overtopping()
+
+    # def __post_init__(self):
+    #     """Parse event data."""
+    #     self.day = self.data.get("day")
+    #     self.depth = self.data.get("depth")
+    #     self.reaches = self.data.get("reaches")
+    #     self.overtopping = self._get_overtopping()
 
     def _get_overtopping(self):
         over_top = self.data.get("overtopping")
@@ -629,7 +636,7 @@ class Event:
 
         Returns
         -------
-        extracted_values: [Dict]
+        Catalog:
             dictionary with a list of values in the basemap as keys and for each key a list of all the intersected
             values in the maps from the path.
         """
@@ -741,9 +748,11 @@ class Event:
             extracted_values = [j for j in extracted_values if j < upper_bound]
 
         hist = Statistic(extracted_values)
+        ndims = extracted_values.ndim
+        colors = ndims * ["#0504aa"]
         fig, ax, opts = hist.histogram(
             bins=15,
-            color="#0504aa",
+            color=colors,
             alpha=0.7,
             rwidth=0.85,
             ylabel="Frequency",

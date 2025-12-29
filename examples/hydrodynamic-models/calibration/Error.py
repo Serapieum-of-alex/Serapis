@@ -15,10 +15,10 @@ import numpy as np
 matplotlib.use("TkAgg")
 import matplotlib.pyplot as plt
 
-import Hapi.hm.calibration as RC
+import serapis.calibration as RC
 
 """change directory to the processing folder inside the project folder"""
-os.chdir(r"C:\MyComputer\01Algorithms\Hydrology\Hapi")
+os.chdir(r"C:\MyComputer\algorithms\Hydrology\Serapis")
 rpath = os.path.abspath(os.getcwd() + "/examples/Hydrodynamic models/test_case")
 saveto = rpath
 # %% Links

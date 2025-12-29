@@ -1,6 +1,6 @@
-from Hapi.hm.river import River
+from serapis.river import River
 
-path = "F:/01Algorithms/Hydrology/HAPI/examples/"
+path = "F:/algorithms/Hydrology/serapis/examples/"
 # %% create the River object
 start = "2010-1-1 00:00:00"
 end = "2010-1-1 05:00:00"
@@ -12,11 +12,11 @@ dto = 50  # sec
 Test = River(
     "Test", version=4, start=start, end=end, dto=dto, dx=dx, fmt="%Y-%m-%d %H:%M:%S"
 )
-Test.oneminresultpath = path + "/data/hydrodynamic model/"
+Test.one_min_result_path = path + "/data/hydrodynamic model/"
 
 Test.Time = 5 * 60 * 60  # (hrs to seconds)
 # Read Input Data
-Test.read_xs(path + "/data/hydrodynamic model/xs_hz.csv")
+Test.read_xs(f"{path}/data/hydrodynamic-models/xs_hz.csv")
 # %% Initial and Boundary condition
 Test.icq = 0
 Test.ich = 12
