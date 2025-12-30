@@ -531,22 +531,3 @@ class CrossSections:
             ]
         ]
         return res_df
-
-    def ListAttributes(self):
-        """Print Attributes List."""
-
-        print("\n")
-        print(
-            "Attributes List of: "
-            + repr(self.__dict__["name"])
-            + " - "
-            + self.__class__.__name__
-            + " Instance\n"
-        )
-        self_keys = list(self.__dict__.keys())
-        self_keys.sort()
-        for key in self_keys:
-            if key != "name":
-                print(str(key) + " : " + repr(self.__dict__[key]))
-
-        print("\n")
